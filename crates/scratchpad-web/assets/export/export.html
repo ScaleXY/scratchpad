@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="generator" content="Scratchpad">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; media-src * data: blob:; frame-src blob: data: about:; form-action 'none'">
+<title>{{TITLE}}</title>
+<link rel="icon" href="data:image/svg+xml;base64,{{FAVICON}}">
+<style>
+{{FONTS}}
+{{CSS}}
+</style>
+<script>
+(function () {
+  var pref = "system";
+  try { pref = localStorage.getItem("scratchpad-theme") || "system"; } catch (_) {}
+  var dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+})();
+</script>
+</head>
+<body>
+<div hidden>{{ICONS}}</div>
+<div id="x-app" class="x-app"></div>
+<noscript><p style="padding:24px">This shared email needs JavaScript to display.</p></noscript>
+<script id="scratchpad-data" type="application/json">{{DATA}}</script>
+<script>
+{{DEVICES_JS}}
+</script>
+<script>
+{{EXPORT_JS}}
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Clippy, headless-only build (no GUI dependencies)
+        run: cargo clippy -p scratchpad --no-default-features --all-targets --locked -- -D warnings
+      - name: Docs
+        run: cargo doc --workspace --no-deps --locked
+        env:
+          RUSTDOCFLAGS: -D warnings
+      - name: Check web UI scripts
+        run: for f in $(find crates/scratchpad-web/assets crates/scratchpad-web/tests -name '*.js' -o -name '*.mjs'); do node --check "$f"; done
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-15, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo test --workspace --locked
+      - name: Headless-only build tests
+        run: cargo test -p scratchpad --no-default-features --locked
+
+  msrv:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: "1.90" # keep in sync with workspace.package.rust-version
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo check --workspace --all-targets --locked
+
+  deny:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check advisories bans licenses sources
+
+  # Tests marked #[ignore] that need real services: S3 (MinIO), IMAP + SMTP relay (GreenMail)
+  # and SpamAssassin.
+  integration:
+    runs-on: ubuntu-22.04
+    services:
+      minio:
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
+        env:
+          MINIO_ROOT_USER: scratchpad
+          MINIO_ROOT_PASSWORD: scratchpad-secret
+        ports: ["9000:9000"]
+      greenmail:
+        image: greenmail/standalone:2.1.3
+        env:
+          GREENMAIL_OPTS: -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled
+        ports: ["3025:3025", "3143:3143"]
+      spamd:
+        image: instantlinux/spamassassin:4.0.2-3
+        ports: ["783:783"]
+    env:
+      SCRATCHPAD_TEST_S3_ENDPOINT: http://127.0.0.1:9000
+      SCRATCHPAD_TEST_S3_BUCKET: mails
+      SCRATCHPAD_TEST_S3_ACCESS_KEY: scratchpad
+      SCRATCHPAD_TEST_S3_SECRET_KEY: scratchpad-secret
+      SCRATCHPAD_TEST_IMAP_HOST: 127.0.0.1
+      SCRATCHPAD_TEST_IMAP_PORT: 3143
+      SCRATCHPAD_TEST_SMTP_RELAY_HOST: 127.0.0.1
+      SCRATCHPAD_TEST_SMTP_RELAY_PORT: 3025
+      SCRATCHPAD_TEST_SPAMD_HOST: 127.0.0.1
+      SCRATCHPAD_TEST_SPAMD_PORT: 783
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build tests
+        run: cargo test --workspace --locked --no-run
+      - name: Prepare bucket (only email/shares/ is public)
+        run: |
+          for i in $(seq 1 60); do
+            docker exec ${{ job.services.minio.id }} mc alias set local http://127.0.0.1:9000 scratchpad scratchpad-secret && break
+            sleep 2
+          done
+          docker exec ${{ job.services.minio.id }} mc mb --ignore-existing local/mails
+          docker exec ${{ job.services.minio.id }} mc anonymous set download local/mails/email/shares
+      - name: Wait for spamd
+        run: |
+          for i in $(seq 1 90); do
+            printf 'PING SPAMC/1.5\r\n\r\n' | timeout 2 nc 127.0.0.1 783 | grep -q PONG && exit 0
+            sleep 2
+          done
+          echo "spamd did not start"; exit 1
+      - name: Integration tests
+        run: cargo test --workspace --locked -- --ignored --skip gui_snapshots
+
+  ui:
+    name: Web UI smoke test (headless Chrome)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: cargo build -p scratchpad --no-default-features --locked
+      - name: Smoke test
+        env:
+          CHROME: google-chrome
+          SCRATCHPAD_BIN: target/debug/scratchpad
+        run: node crates/scratchpad-web/tests/ui/smoke.mjs
+
+  docker:
+    name: Container image
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build
+        run: docker build -t scratchpad:ci .
+      - name: Run and wait until healthy
+        run: |
+          docker run -d --name scratchpad -p 2525:2525 -p 8025:8025 -e SCRATCHPAD_WEB_AUTH=admin:secret scratchpad:ci
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' scratchpad)
+            [ "$status" = healthy ] && break
+            sleep 2
+          done
+          docker logs scratchpad
+          [ "$status" = healthy ]
+          curl -fsS -u admin:secret http://127.0.0.1:8025/api/status
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8025/api/status)" = 401

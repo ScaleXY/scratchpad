@@ -1,0 +1,7 @@
+# Environment for the scratchpad systemd service. Uncomment and adjust.
+#SCRATCHPAD_SMTP_HOST=0.0.0.0
+#SCRATCHPAD_SMTP_PORT=2525
+#SCRATCHPAD_WEB_HOST=0.0.0.0
+#SCRATCHPAD_WEB_PORT=8025
+#SCRATCHPAD_WEB_AUTH=admin:change-me
+#SCRATCHPAD_PUBLIC_URL=https://scratchpad.example.com

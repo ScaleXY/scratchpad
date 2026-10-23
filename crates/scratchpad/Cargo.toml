@@ -1,0 +1,67 @@
+[package]
+name = "scratchpad"
+description = "Scratchpad - email testing and debugging. Desktop app (iced) and headless web server."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+default-run = "scratchpad"
+
+[[bin]]
+name = "scratchpad"
+path = "src/main.rs"
+
+[features]
+default = ["gui"]
+# Desktop GUI. Build with `--no-default-features` for a headless-only server binary.
+gui = ["dep:iced", "dep:notify-rust", "dep:rfd", "dep:open"]
+
+[dependencies]
+scratchpad-core.workspace = true
+scratchpad-web.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+chrono.workspace = true
+clap = { version = "4", features = ["derive", "env"] }
+iced = { version = "0.14", optional = true, default-features = false, features = ["wgpu", "tiny-skia", "tokio", "x11", "wayland", "web-colors", "thread-pool", "linux-theme-detection", "image", "svg"] }
+notify-rust = { version = "4", optional = true }
+rfd = { version = "0.17", optional = true }
+open = { version = "5", optional = true }
+
+[dev-dependencies]
+iced_test = "0.14"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_Foundation"] }
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[package.metadata.deb]
+name = "scratchpad"
+maintainer = "ScaleXY<ping@scalexy.com>"
+copyright = "2026, ScaleXY"
+section = "mail"
+priority = "optional"
+extended-description = """Scratchpad captures emails sent by your applications through a local SMTP \
+server and lets you inspect them in a desktop app or a web interface. It can also run headless \
+on a server (scratchpad --headless)."""
+depends = "$auto"
+recommends = "libxkbcommon0, libwayland-client0 | libx11-6, xdg-desktop-portal"
+assets = [
+    ["target/release/scratchpad", "usr/bin/scratchpad", "755"],
+    ["../../packaging/linux/scratchpad.desktop", "usr/share/applications/scratchpad.desktop", "644"],
+    ["../../packaging/icons/scratchpad-512.png", "usr/share/icons/hicolor/512x512/apps/scratchpad.png", "644"],
+    ["../../packaging/linux/scratchpad.default", "etc/default/scratchpad", "644"],
+    ["../../README.md", "usr/share/doc/scratchpad/README.md", "644"],
+]
+conf-files = ["/etc/default/scratchpad"]
+maintainer-scripts = "../../packaging/linux/debian"
+systemd-units = { unit-name = "scratchpad", unit-scripts = "../../packaging/linux", enable = false, start = false }

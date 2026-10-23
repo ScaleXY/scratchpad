@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+if [ "$1" = "configure" ]; then
+    if ! getent passwd scratchpad >/dev/null; then
+        adduser --system --group --home /var/lib/scratchpad --no-create-home scratchpad >/dev/null
+    fi
+    mkdir -p /var/lib/scratchpad
+    chown scratchpad:scratchpad /var/lib/scratchpad
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+    fi
+fi
+#DEBHELPER#
+exit 0

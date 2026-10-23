@@ -1,0 +1,27 @@
+# Runs Scratchpad headless (SMTP + web interface) as a system service.
+#   sudo systemctl enable --now scratchpad
+# Configure with /etc/default/scratchpad (see SCRATCHPAD_* variables in `scratchpad --help`).
+[Unit]
+Description=Scratchpad email testing server (headless)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=scratchpad
+Group=scratchpad
+Environment=SCRATCHPAD_HEADLESS=true
+Environment=SCRATCHPAD_DATA_DIR=/var/lib/scratchpad
+EnvironmentFile=-/etc/default/scratchpad
+ExecStart=/usr/bin/scratchpad --headless
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/scratchpad
+StateDirectory=scratchpad
+
+[Install]
+WantedBy=multi-user.target

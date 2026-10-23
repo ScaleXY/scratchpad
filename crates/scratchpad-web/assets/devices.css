@@ -1,0 +1,21 @@
+/* Multi-device previews (devices.js). Uses the app's design tokens. */
+.dv-bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg); flex-wrap: wrap; }
+.dv-bar .segmented button span { display: inline; }
+.dv-bar .dv-hint { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.dv-bar .dv-rotate.on { color: var(--accent); background: var(--accent-soft); }
+.dv-stage { background: var(--preview-bg); min-height: calc(100% - 53px); }
+.dv-stage.fit iframe { border: 0; background: #fff; width: 100%; min-height: calc(100vh - 320px); display: block; }
+.dv-stage.framed { padding: 28px; overflow: hidden; }
+.dv-row { display: flex; gap: 28px; align-items: flex-start; justify-content: center; }
+.dv-device { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; }
+.dv-box { position: relative; overflow: hidden; border-radius: 14px; box-shadow: var(--shadow-lg); background: #fff; }
+.dv-mobile .dv-box { border-radius: 22px; }
+.dv-screen { transform-origin: 0 0; }
+.dv-screen iframe { border: 0; width: 100%; height: 100%; display: block; background: #fff; }
+.dv-device figcaption { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; max-width: 100%; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: center; }
+.dv-device figcaption > * { white-space: nowrap; }
+.dv-device figcaption .link-btn { color: var(--fg); font-weight: 500; }
+.dv-device .dv-scale:not(:empty) { padding: 1px 6px; border-radius: 99px; background: var(--surface-2); }
+@media (max-width: 900px) {
+  .dv-bar .segmented button span { display: none; }
+}

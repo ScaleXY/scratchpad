@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Scratchpad
+GenericName=Email Testing
+Comment=Capture and debug emails sent by your applications
+Exec=scratchpad
+Icon=scratchpad
+Terminal=false
+Categories=Development;Network;Email;
+Keywords=email;smtp;testing;debug;mail;
+StartupWMClass=scratchpad

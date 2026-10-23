@@ -1,0 +1,4 @@
+/target
+/dist
+*.p12
+*.pfx

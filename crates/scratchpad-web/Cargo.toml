@@ -1,0 +1,25 @@
+[package]
+name = "scratchpad-web"
+description = "Web interface and REST API for Scratchpad"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+scratchpad-core.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+futures.workspace = true
+base64.workspace = true
+chrono.workspace = true
+axum = { version = "0.8", default-features = false, features = ["http1", "http2", "json", "query", "tokio"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+
+[dev-dependencies]
+reqwest = { version = "0.13", default-features = false, features = ["json"] }

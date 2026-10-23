@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scratchpad</title>
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/app.css">
+  <link rel="stylesheet" href="/assets/devices.css">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="scratchpad-share" content="__SHARE_TOKEN__">
+  <script src="/assets/boot.js"></script>
+  <script src="/assets/devices.js" defer></script>
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <div id="app" class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <section class="list" id="list"></section>
+    <main class="detail" id="detail"></main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="dialog"><form method="dialog" id="dialog-form"></form></dialog>
+</body>
+</html>
