@@ -2,7 +2,7 @@
 #   docker build -t scratchpad .
 #   docker run -p 2525:2525 -p 8025:8025 -e SCRATCHPAD_WEB_AUTH=admin:secret scratchpad
 # Keep the Rust version at or above workspace.package.rust-version.
-FROM rust:1.96-slim-bookworm AS build
+FROM rust:1.98-slim-bookworm AS build
 WORKDIR /src
 COPY . .
 RUN cargo build --release --locked -p scratchpad --no-default-features \
