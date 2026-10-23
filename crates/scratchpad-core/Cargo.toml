@@ -20,7 +20,7 @@ futures.workspace = true
 uuid.workspace = true
 base64.workspace = true
 mail-parser = { version = "0.11", features = ["full_encoding"] }
-rusqlite = { version = "0.37", features = ["bundled"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
 directories = "6"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "logging", "tls12"] }
