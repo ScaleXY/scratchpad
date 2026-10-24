@@ -56,6 +56,13 @@ if [[ -n "${MACOS_CERTIFICATE:-}" ]]; then
   security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
   security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
   IDENTITY="${MACOS_SIGNING_IDENTITY:?MACOS_SIGNING_IDENTITY is required with MACOS_CERTIFICATE}"
+  # Notarization only accepts Developer ID; "Apple Distribution" is for the App Store
+  # (scripts/package-macos-appstore.sh). A SHA-1 hash is checked against the keychain.
+  if ! security find-identity -v -p codesigning | grep -F "$IDENTITY" | grep -q '"Developer ID Application: '; then
+    echo "MACOS_SIGNING_IDENTITY must be a \"Developer ID Application\" certificate, not: $IDENTITY" >&2
+    security find-identity -v -p codesigning >&2
+    exit 1
+  fi
   echo "Signing with: $IDENTITY"
 else
   echo "MACOS_CERTIFICATE not set: ad-hoc signing (not notarized)"
@@ -74,12 +81,29 @@ mkdir -p "$DMG_ROOT"
 cp -R "$APP" "$DMG_ROOT/"
 ln -s /Applications "$DMG_ROOT/Applications"
 rm -f "$DMG"
-hdiutil create -volname "Scratchpad" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG" >/dev/null
+# `diskutil image` replaces the deprecated `hdiutil create` on newer macOS (not on macos-15 runners).
+if diskutil image create from -h >/dev/null 2>&1; then
+  # Its progress goes to stderr; show the output only if it fails.
+  if ! LOG="$(diskutil image create from --format UDZO --volumeName "Scratchpad" "$DMG_ROOT" "$DMG" 2>&1)"; then
+    echo "$LOG" >&2
+    exit 1
+  fi
+else
+  hdiutil create -volname "Scratchpad" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG" >/dev/null
+fi
 [[ "$IDENTITY" != "-" ]] && codesign --force --timestamp --sign "$IDENTITY" "$DMG"
 
 if [[ "$IDENTITY" != "-" && -n "${APPLE_ID:-}" && -n "${APPLE_APP_PASSWORD:-}" && -n "${APPLE_TEAM_ID:-}" ]]; then
   echo "Notarizing $DMG"
-  xcrun notarytool submit "$DMG" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+  NOTARY_AUTH=(--apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD")
+  RESULT="$(xcrun notarytool submit "$DMG" "${NOTARY_AUTH[@]}" --wait --output-format json)"
+  echo "$RESULT"
+  read -r SUBMISSION_ID STATUS < <(python3 -c 'import json,sys; r=json.loads(sys.argv[1]); print(r.get("id",""), r.get("status",""))' "$RESULT")
+  if [[ "$STATUS" != "Accepted" ]]; then
+    echo "Notarization failed ($STATUS). Apple's log:" >&2
+    [[ -n "$SUBMISSION_ID" ]] && xcrun notarytool log "$SUBMISSION_ID" "${NOTARY_AUTH[@]}" >&2
+    exit 1
+  fi
   xcrun stapler staple "$DMG"
   xcrun stapler validate "$DMG"
   # The notarization ticket also covers the app inside the image.

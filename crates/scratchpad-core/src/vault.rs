@@ -20,7 +20,7 @@ use base64::Engine;
 use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use chacha20poly1305::{XChaCha20Poly1305, XNonce};
 use futures::future::BoxFuture;
-use rand::RngCore;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use zeroize::{Zeroize, Zeroizing};
 
@@ -120,7 +120,7 @@ impl VaultBlob {
         rand::rng().fill_bytes(&mut nonce);
         let ciphertext = XChaCha20Poly1305::new(key.into())
             .encrypt(
-                XNonce::from_slice(&nonce),
+                &XNonce::from(nonce),
                 Payload {
                     msg: &plaintext,
                     aad: AAD,
@@ -150,7 +150,7 @@ impl VaultBlob {
         let plaintext = Zeroizing::new(
             XChaCha20Poly1305::new(key.into())
                 .decrypt(
-                    XNonce::from_slice(&nonce),
+                    &XNonce::try_from(nonce.as_slice()).context("corrupt vault")?,
                     Payload {
                         msg: &ciphertext,
                         aad: AAD,

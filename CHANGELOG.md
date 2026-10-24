@@ -27,7 +27,8 @@ All notable changes to Scratchpad are documented here. The format follows
 - Headless mode for servers and containers, with HTTP basic auth, a health check
   (`--healthcheck`) and JSON logs (`--log-format json`).
 - Signed builds for Windows (x86, x64, arm64), macOS (x64, arm64) and Linux (x86, x64, arm64),
-  a multi-arch container image, and Microsoft Store packages (MSIX).
+  a multi-arch container image, Microsoft Store packages (MSIX) and a sandboxed Mac App Store
+  package.
 
 [Unreleased]: https://github.com/scalexy/scratchpad/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/scalexy/scratchpad/releases/tag/v0.1.0

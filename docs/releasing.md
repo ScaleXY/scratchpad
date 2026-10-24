@@ -22,11 +22,11 @@ a version tag is pushed.
    * the GitHub release `Scratchpad 1.2.0` has every artifact, `SHA256SUMS` (+ `.asc`) and the
      changelog section as release notes;
    * `ghcr.io/scalexy/scratchpad:1.2.0`, `:1.2` and `:latest` are pushed and signed;
-   * the Store submission is waiting for approval (if configured, see
-     [windows-store.md](windows-store.md)).
+   * the Store uploads are waiting for approval (if configured, see
+     [windows-store.md](windows-store.md) and [mac-app-store.md](mac-app-store.md)).
 
 Prereleases (any version with a `-` suffix) are marked as prereleases on GitHub, don't move the
-`latest` container tag and are never sent to the Store.
+`latest` container tag and are never sent to either store.
 
 ## What the workflow does
 
@@ -35,8 +35,10 @@ Prereleases (any version with a `-` suffix) are marked as prereleases on GitHub,
 | `prepare` | Fails if the tag doesn't equal `v` + the workspace version; extracts the release notes from `CHANGELOG.md` |
 | `build` (8 targets) | Builds, runs the test suite and a smoke test (SMTP capture, health check, web API, export), packages, signs and attests |
 | `msix` | Builds the Microsoft Store `.msixbundle`/`.msixupload` from the Windows builds |
+| `mac-app-store` | Builds the sandboxed universal Mac App Store `.pkg` from the macOS builds |
 | `release` | Creates the GitHub release with checksums (GPG-signed when a key is configured) |
 | `store` | Uploads to Partner Center (optional, gated by the `microsoft-store` environment) |
+| `mac-app-store-upload` | Uploads to App Store Connect for TestFlight and review (optional, gated by the `mac-app-store` environment) |
 | `container` | Builds and pushes the multi-arch image (amd64, arm64, 386) and signs it with cosign |
 
 A manual run (*Actions → Release → Run workflow*) builds and uploads everything as workflow
@@ -51,6 +53,7 @@ artifacts without publishing, which is useful to test packaging changes.
 | Linux x64 / x86 / arm64 | `scratchpad-<v>-linux-<arch>.deb` (desktop app + `scratchpad` systemd service), `scratchpad-<v>-linux-<arch>.tar.gz` (+ `.asc`) |
 | Container | `ghcr.io/scalexy/scratchpad:<v>` |
 | Microsoft Store | `msstore-package` workflow artifact |
+| Mac App Store | `mac-app-store-package` workflow artifact |
 
 ## Signing secrets
 
@@ -64,7 +67,15 @@ All are optional; without them the artifacts are unsigned (and the workflow says
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SIGNING_ENDPOINT`, `AZURE_SIGNING_ACCOUNT`, `AZURE_CERTIFICATE_PROFILE` | Authenticode with Azure Trusted Signing (instead of a .pfx) |
 | `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE` | `.deb`/tarball and `SHA256SUMS` signatures |
 
-Microsoft Store secrets and variables are described in [windows-store.md](windows-store.md).
+The macOS certificate must be a **Developer ID Application** certificate (only the Account
+Holder can create one: *Certificates → + → Developer ID Application*, "G2 Sub-CA"). An *Apple
+Distribution* certificate signs fine, but notarization rejects it with status *Invalid*; it is
+only for the Mac App Store package. `package-macos.sh` refuses other certificates and prints
+Apple's log if notarization fails. To read the log of an earlier submission:
+`xcrun notarytool log <id> --apple-id … --team-id … --password …`.
+
+Store secrets and variables are described in [windows-store.md](windows-store.md) and
+[mac-app-store.md](mac-app-store.md).
 
 ## Verifying a release
 

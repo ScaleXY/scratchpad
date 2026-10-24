@@ -73,6 +73,9 @@ fn snapshot_sized(app: &mut App, theme: &Theme, name: &str, height: f32) {
 /// The smallest window the app allows.
 const MIN: (f32, f32) = (960.0, 580.0);
 
+/// Mac App Store screenshots: 1440x900 points, rendered at 2880x1800.
+const STORE: (f32, f32) = (1440.0, 900.0);
+
 fn snapshot_at(app: &mut App, theme: &Theme, name: &str, size: (f32, f32)) {
     app.window = iced::Size::new(size.0, size.1);
     app.list_height = 0.0;
@@ -162,16 +165,20 @@ fn gui_snapshots() {
     let _ = app.update(Message::SelectEmail(invoice.clone()));
     let _ = app.update(Message::ToggleCheck(app.emails[2].id.clone(), true));
     snapshot(&mut app, &dark, "02-inbox-dark");
+    snapshot_at(&mut app, &dark, "store-01-inbox-dark", STORE);
     snapshot_at(&mut app, &dark, "min-02-inbox-dark", MIN);
     snapshot(&mut app, &light, "03-inbox-light");
+    snapshot_at(&mut app, &light, "store-02-inbox-light", STORE);
     let _ = app.update(Message::Tab(Tab::Spam));
     snapshot(&mut app, &dark, "04-spam-dark");
+    snapshot_at(&mut app, &dark, "store-04-spam-dark", STORE);
     let _ = app.update(Message::Tab(Tab::Headers));
     let _ = app.update(Message::ToggleMeta);
     snapshot(&mut app, &dark, "05-headers-dark");
     snapshot_at(&mut app, &light, "min-05-headers-light", MIN);
     let _ = app.update(Message::Page(Page::Setup));
     snapshot(&mut app, &dark, "06-setup-dark");
+    snapshot_at(&mut app, &dark, "store-05-setup-dark", STORE);
     snapshot_at(&mut app, &dark, "min-06-setup-dark", MIN);
     let _ = app.update(Message::Page(Page::Settings));
     snapshot(&mut app, &dark, "07-settings-dark");
@@ -183,6 +190,7 @@ fn gui_snapshots() {
     let _ = app.update(Message::Tab(Tab::Preview));
     let _ = app.update(Message::Device(Device::All));
     snapshot(&mut app, &dark, "09-preview-all-dark");
+    snapshot_at(&mut app, &dark, "store-03-devices-dark", STORE);
     snapshot_at(&mut app, &dark, "min-09-preview-all-dark", MIN);
     let _ = app.update(Message::Device(Device::Mobile));
     snapshot(&mut app, &light, "10-preview-mobile-light");
@@ -233,6 +241,7 @@ fn gui_snapshots() {
     let _ = app.update(Message::ShareSelected);
     let _ = app.update(Message::Cloud(CloudMsg::Visibility(Visibility::Private)));
     snapshot(&mut app, &dark, "12-share-dialog-dark");
+    snapshot_at(&mut app, &dark, "store-06-share-dark", STORE);
     snapshot(&mut app, &light, "13-share-dialog-light");
     snapshot_at(&mut app, &dark, "min-13-share-dialog-dark", MIN);
     let _ = app.update(Message::Cloud(CloudMsg::Cancel));

@@ -204,7 +204,7 @@ end-to-end tests):
 | OS | Architectures | Artifacts | Signing |
 | --- | --- | --- | --- |
 | Windows 10/11 | x86 (32-bit), x64, arm64 | `*-setup.exe` (Inno Setup), `.zip`, Microsoft Store (MSIX bundle) | Authenticode via `signtool` (PFX) or Azure Trusted Signing; the Store signs Store packages |
-| macOS 11+ | x64, arm64 | `.dmg`, `.app` zip, CLI `.tar.gz` | Developer ID + hardened runtime + notarization (ad-hoc without a certificate) |
+| macOS 11+ | x64, arm64 | `.dmg`, `.app` zip, CLI `.tar.gz`, Mac App Store (sandboxed universal `.pkg`) | Developer ID + hardened runtime + notarization (ad-hoc without a certificate); Apple re-signs Store packages |
 | Ubuntu 22.04+ | x86 (32-bit), x64, arm64 | `.deb`, `.tar.gz` | detached GPG signatures (`.asc`) |
 
 Every release artifact also gets a Sigstore build-provenance attestation
@@ -247,11 +247,12 @@ scripts/smoke-test.sh target/release/scratchpad        # end-to-end check of a b
 pushing the tag runs `.github/workflows/release.yml`. It builds, tests, smoke-tests, signs and
 packages all eight targets on native GitHub runners, then publishes a GitHub release (notes from
 `CHANGELOG.md`, checksums, provenance attestations), a signed multi-arch (`amd64`, `arm64`, `386`)
-container image and, when configured, a Microsoft Store submission. Without signing secrets it
-still produces unsigned (ad-hoc on macOS) artifacts.
+container image and, when configured, Microsoft Store and Mac App Store uploads. Without signing
+secrets it still produces unsigned (ad-hoc on macOS) artifacts.
 
 * [docs/releasing.md](docs/releasing.md): release process, secrets, verifying downloads
 * [docs/windows-store.md](docs/windows-store.md): publishing to the Microsoft Store
+* [docs/mac-app-store.md](docs/mac-app-store.md): publishing to the Mac App Store
 
 ## Third-party assets
 

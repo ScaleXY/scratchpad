@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Mac App Store build (scripts/package-macos-appstore.sh). The Store requires the App Sandbox. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <!-- SMTP server and web interface. -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <!-- Link checker, forwarding, S3, IMAP, SpamAssassin. -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- Save and export dialogs. -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <!-- Filled in from the provisioning profile. -->
+    <key>com.apple.application-identifier</key>
+    <string>__APPLICATION_IDENTIFIER__</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>__TEAM_ID__</string>
+</dict>
+</plist>

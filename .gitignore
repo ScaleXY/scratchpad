@@ -2,3 +2,4 @@
 /dist
 *.p12
 *.pfx
+scripts/local
