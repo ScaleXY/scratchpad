@@ -29,7 +29,7 @@ rcgen = { version = "0.14", default-features = false, features = ["ring", "pem",
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "http2"] }
 lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "builder", "hostname", "tokio1", "tokio1-rustls", "ring", "webpki-roots"] }
 async-imap = { version = "0.12", default-features = false, features = ["runtime-tokio"] }
-html2text = "0.15"
+html2text = "0.17"
 rand = "0.10"
 rusty-s3 = { version = "0.10", default-features = false, features = ["rustcrypto"] }
 argon2 = { version = "0.6", default-features = false, features = ["alloc", "zeroize"] }

@@ -81,7 +81,8 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 
 NAME="scratchpad-$VERSION-macos-$ARCH"
 DMG="$OUT/$NAME.dmg"
-DMG_ROOT="$STAGE/dmg"
+# diskutil names the volume after this folder; older versions have no --volumeName.
+DMG_ROOT="$STAGE/dmg/Scratchpad"
 mkdir -p "$DMG_ROOT"
 cp -R "$APP" "$DMG_ROOT/"
 ln -s /Applications "$DMG_ROOT/Applications"
@@ -89,7 +90,7 @@ rm -f "$DMG"
 # `diskutil image` replaces the deprecated `hdiutil create` on newer macOS (not on macos-15 runners).
 if diskutil image create from -h >/dev/null 2>&1; then
   # Its progress goes to stderr; show the output only if it fails.
-  if ! LOG="$(diskutil image create from --format UDZO --volumeName "Scratchpad" "$DMG_ROOT" "$DMG" 2>&1)"; then
+  if ! LOG="$(diskutil image create from --format UDZO "$DMG_ROOT" "$DMG" 2>&1)"; then
     echo "$LOG" >&2
     exit 1
   fi
