@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="420" viewBox="0 0 660 420">
+  <!--
+    Background of the macOS .dmg window: a comic strip about intercepting Enigma messages.
+    Rendered by scripts/build-dmg-background.sh into dmg-background.tiff (1x + 2x).
+    The empty frames hold the Finder icons; keep them in sync with packaging/macos/dmg-settings.py:
+      Scratchpad.app  centered at (170, 302) in the receiver screen
+      Applications    centered at (490, 302) in the archive drawer
+    Finder draws each label just below the icon (about 362-380 pt), on the brass nameplates. Their
+    mid-tone keeps both the black (Light Mode) and white (Dark Mode) label text readable.
+  -->
+  <defs>
+    <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.1" fill="#1b1b2f" opacity="0.12"/>
+    </pattern>
+    <pattern id="dots-light" width="5" height="5" patternUnits="userSpaceOnUse">
+      <circle cx="2.5" cy="2.5" r="0.9" fill="#ffffff" opacity="0.18"/>
+    </pattern>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141a3c"/>
+      <stop offset="1" stop-color="#2c3a78"/>
+    </linearGradient>
+    <linearGradient id="lamp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/>
+      <stop offset="1" stop-color="#f3c25f"/>
+    </linearGradient>
+    <linearGradient id="hut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfe3d4"/>
+      <stop offset="1" stop-color="#9fc4ab"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a5a34"/>
+      <stop offset="1" stop-color="#5e3a1f"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5d6b78"/>
+      <stop offset="0.5" stop-color="#7d8c99"/>
+      <stop offset="1" stop-color="#55616d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#fff6d6"/>
+      <stop offset="0.7" stop-color="#ffe7a3"/>
+      <stop offset="1" stop-color="#f2c45a"/>
+    </radialGradient>
+    <radialGradient id="drawer" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#fbf4e2"/>
+      <stop offset="1" stop-color="#e7d7b1"/>
+    </radialGradient>
+    <radialGradient id="burst" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff3a6"/>
+      <stop offset="1" stop-color="#ffd23f"/>
+    </radialGradient>
+    <style>
+      .ink { stroke: #1b1b2f; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+      .thin { stroke: #1b1b2f; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+      .caption { font-family: "American Typewriter", "Courier New", serif; font-weight: 600; fill: #1b1b2f; }
+      .comic { font-family: "Chalkboard SE", "Comic Sans MS", sans-serif; font-weight: 700; fill: #1b1b2f; }
+      .mono { font-family: "American Typewriter", "Courier New", monospace; fill: #1b1b2f; }
+    </style>
+  </defs>
+
+  <!-- Paper -->
+  <rect width="660" height="420" fill="#f4ecd8"/>
+  <rect width="660" height="420" fill="url(#dots)"/>
+
+  <!-- ============ Panel 1: the U-boat transmits ============ -->
+  <g>
+    <clipPath id="p1"><rect x="12" y="12" width="206" height="184" rx="3"/></clipPath>
+    <g clip-path="url(#p1)">
+      <rect x="12" y="12" width="206" height="184" fill="url(#night)"/>
+      <rect x="12" y="12" width="206" height="184" fill="url(#dots-light)"/>
+      <circle cx="182" cy="52" r="15" fill="#f6efc8"/>
+      <circle cx="188" cy="48" r="13" fill="#1f2853"/>
+      <g fill="#f6efc8">
+        <circle cx="40" cy="70" r="1.4"/><circle cx="96" cy="58" r="1.2"/><circle cx="140" cy="80" r="1.5"/>
+        <circle cx="70" cy="96" r="1.1"/><circle cx="160" cy="104" r="1.2"/><circle cx="120" cy="46" r="1"/>
+      </g>
+      <!-- radio waves -->
+      <g fill="none" stroke="#ffd23f" stroke-width="2.6" stroke-linecap="round">
+        <path d="M118 102 a14 14 0 0 1 0 -24"/><path d="M110 108 a24 24 0 0 1 0 -36"/>
+        <path d="M144 102 a14 14 0 0 0 0 -24"/><path d="M152 108 a24 24 0 0 0 0 -36"/>
+      </g>
+      <text x="131" y="64" text-anchor="middle" class="comic" font-size="13" fill="#ffd23f" style="fill:#ffd23f">−·−· ·−−</text>
+      <!-- U-boat -->
+      <path class="ink" fill="#3b4250" d="M30 150 Q36 140 60 139 L196 139 Q214 141 222 150 Q206 160 60 160 Q36 159 30 150 Z"/>
+      <path class="ink" fill="#4a5262" d="M104 139 L108 118 L150 118 L156 139 Z"/>
+      <path class="ink" fill="none" d="M131 118 L131 92 M124 98 L138 98"/>
+      <rect x="114" y="123" width="8" height="5" fill="#ffd23f"/>
+      <!-- sea -->
+      <path fill="#1d2a5c" d="M12 154 Q30 146 48 154 T84 154 T120 154 T156 154 T192 154 T228 154 V196 H12 Z"/>
+      <path fill="none" stroke="#7f95e6" stroke-width="2" d="M14 166 Q30 160 46 166 T78 166 M100 176 Q116 170 132 176 T164 176 M170 164 Q184 158 198 164"/>
+    </g>
+    <rect x="12" y="12" width="206" height="184" rx="3" fill="none" class="ink"/>
+    <rect x="20" y="20" width="150" height="22" fill="#ffe08a" class="thin"/>
+    <text x="27" y="36" class="caption" font-size="11">NORTH ATLANTIC, 1941</text>
+    <rect x="20" y="168" width="190" height="21" fill="#fffaf0" class="thin"/>
+    <text x="115" y="183" text-anchor="middle" class="caption" font-size="10.5">A U-boat radios its position…</text>
+  </g>
+
+  <!-- ============ Panel 2: the listening station ============ -->
+  <g>
+    <clipPath id="p2"><rect x="227" y="12" width="206" height="184" rx="3"/></clipPath>
+    <g clip-path="url(#p2)">
+      <rect x="227" y="12" width="206" height="184" fill="url(#lamp)"/>
+      <rect x="227" y="12" width="206" height="184" fill="url(#dots)"/>
+      <!-- radio set -->
+      <rect x="244" y="74" width="80" height="62" rx="4" fill="#4b3a2a" class="ink"/>
+      <circle cx="262" cy="96" r="9" fill="#d9c9a3" class="thin"/><path class="thin" d="M262 96 L266 90"/>
+      <circle cx="290" cy="96" r="9" fill="#d9c9a3" class="thin"/><path class="thin" d="M290 96 L284 92"/>
+      <rect x="252" y="114" width="64" height="12" rx="2" fill="#f7e7a8" class="thin"/>
+      <path class="thin" d="M258 120 h6 M268 120 h2 M274 120 h6 M284 120 h2 M290 120 h8" stroke="#c0392b"/>
+      <circle cx="313" cy="83" r="3" fill="#e74c3c"/>
+      <!-- headphone cable -->
+      <path fill="none" stroke="#1b1b2f" stroke-width="2" d="M324 120 Q342 132 352 112"/>
+      <!-- operator -->
+      <path class="ink" fill="#5b6f4a" d="M330 196 Q332 140 372 132 Q412 140 416 196 Z"/>
+      <circle cx="372" cy="104" r="24" fill="#f0c9a0" class="ink"/>
+      <path class="ink" fill="#5a3b22" d="M349 98 Q352 76 374 78 Q396 78 396 98 Q384 88 372 90 Q358 90 349 98 Z"/>
+      <path class="ink" fill="none" d="M346 104 Q346 70 372 70 Q398 70 398 104"/>
+      <rect x="340" y="96" width="11" height="20" rx="4" fill="#2b2b3a" class="thin"/>
+      <rect x="393" y="96" width="11" height="20" rx="4" fill="#2b2b3a" class="thin"/>
+      <circle cx="364" cy="106" r="2.2" fill="#1b1b2f"/><circle cx="381" cy="106" r="2.2" fill="#1b1b2f"/>
+      <path class="thin" fill="none" d="M366 117 Q372 120 378 117"/>
+      <!-- desk and pad -->
+      <rect x="227" y="140" width="206" height="56" fill="url(#wood)"/>
+      <path class="ink" d="M227 140 H433"/>
+      <g transform="rotate(-4 300 150)">
+        <rect x="238" y="136" width="96" height="26" fill="#fffdf4" class="thin"/>
+        <text x="244" y="153" class="mono" font-size="10.5" font-weight="700">QBLTW LDAHH</text>
+      </g>
+      <path class="ink" fill="#f0c9a0" d="M356 148 Q344 138 336 148 Q342 158 356 156 Z"/>
+      <path class="ink" stroke="#c0392b" d="M338 150 L324 162"/>
+    </g>
+    <rect x="227" y="12" width="206" height="184" rx="3" fill="none" class="ink"/>
+    <!-- sound effect -->
+    <g transform="rotate(-8 290 44)">
+      <text x="290" y="50" text-anchor="middle" class="comic" font-size="17" style="fill:#d63c3c;stroke:#1b1b2f;stroke-width:0.8;paint-order:stroke">DIT-DAH-DIT!</text>
+    </g>
+    <rect x="236" y="168" width="190" height="21" fill="#fffaf0" class="thin"/>
+    <text x="331" y="183" text-anchor="middle" class="caption" font-size="10.5">…a listening station copies it all.</text>
+  </g>
+
+  <!-- ============ Panel 3: Bletchley breaks it ============ -->
+  <g>
+    <clipPath id="p3"><rect x="442" y="12" width="206" height="184" rx="3"/></clipPath>
+    <g clip-path="url(#p3)">
+      <rect x="442" y="12" width="206" height="184" fill="url(#hut)"/>
+      <rect x="442" y="12" width="206" height="184" fill="url(#dots)"/>
+      <!-- Enigma machine -->
+      <path class="ink" fill="url(#wood)" d="M462 96 H628 V188 H462 Z"/>
+      <rect x="470" y="104" width="150" height="76" rx="3" fill="#2d2d36" class="thin"/>
+      <!-- rotor windows -->
+      <g class="thin">
+        <rect x="508" y="88" width="20" height="16" rx="2" fill="#e9e1c9"/>
+        <rect x="535" y="88" width="20" height="16" rx="2" fill="#e9e1c9"/>
+        <rect x="562" y="88" width="20" height="16" rx="2" fill="#e9e1c9"/>
+      </g>
+      <g class="mono" font-size="11" font-weight="700" text-anchor="middle">
+        <text x="518" y="100">K</text><text x="545" y="100">E</text><text x="572" y="100">Y</text>
+      </g>
+      <!-- lampboard -->
+      <g fill="#6f6f7a">
+        <circle cx="484" cy="118" r="5"/><circle cx="500" cy="118" r="5"/><circle cx="516" cy="118" r="5"/>
+        <circle cx="532" cy="118" r="5"/><circle cx="564" cy="118" r="5"/>
+        <circle cx="580" cy="118" r="5"/><circle cx="596" cy="118" r="5"/><circle cx="606" cy="132" r="5"/>
+        <circle cx="492" cy="132" r="5"/><circle cx="508" cy="132" r="5"/><circle cx="524" cy="132" r="5"/>
+        <circle cx="540" cy="132" r="5"/><circle cx="556" cy="132" r="5"/><circle cx="572" cy="132" r="5"/><circle cx="588" cy="132" r="5"/>
+      </g>
+      <circle cx="548" cy="118" r="7" fill="#ffd23f" stroke="#fff4b0" stroke-width="2"/>
+      <g fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round">
+        <path d="M548 106 V100 M560 110 L564 106 M536 110 L532 106"/>
+      </g>
+      <!-- keyboard -->
+      <g fill="#e9e1c9" stroke="#1b1b2f" stroke-width="1.2">
+        <circle cx="484" cy="152" r="5.5"/><circle cx="500" cy="152" r="5.5"/><circle cx="516" cy="152" r="5.5"/><circle cx="532" cy="152" r="5.5"/>
+        <circle cx="548" cy="152" r="5.5"/><circle cx="564" cy="152" r="5.5"/><circle cx="580" cy="152" r="5.5"/><circle cx="596" cy="152" r="5.5"/>
+        <circle cx="492" cy="167" r="5.5"/><circle cx="508" cy="167" r="5.5"/><circle cx="524" cy="167" r="5.5"/><circle cx="540" cy="167" r="5.5"/>
+        <circle cx="556" cy="167" r="5.5"/><circle cx="572" cy="167" r="5.5"/><circle cx="588" cy="167" r="5.5"/><circle cx="604" cy="160" r="5.5"/>
+      </g>
+      <!-- decoded slip -->
+      <g transform="rotate(5 588 64)">
+        <rect x="542" y="46" width="96" height="34" fill="#fffdf4" class="thin"/>
+        <text x="590" y="60" text-anchor="middle" class="mono" font-size="8.5" font-weight="700">WETTERVORHER-</text>
+        <text x="590" y="73" text-anchor="middle" class="mono" font-size="8.5" font-weight="700">SAGE BISKAYA</text>
+      </g>
+    </g>
+    <rect x="442" y="12" width="206" height="184" rx="3" fill="none" class="ink"/>
+    <!-- speech bubble -->
+    <path class="ink" fill="#ffffff" d="M454 26 H534 Q542 26 542 34 V58 Q542 66 534 66 H500 L488 80 L490 66 H462 Q454 66 454 58 V34 Q454 26 462 26 Z"/>
+    <text x="498" y="44" text-anchor="middle" class="comic" font-size="11">Cracked</text>
+    <text x="498" y="58" text-anchor="middle" class="comic" font-size="11">it!</text>
+    <rect x="451" y="168" width="190" height="21" fill="#fffaf0" class="thin"/>
+    <text x="546" y="183" text-anchor="middle" class="caption" font-size="10.5">…and Bletchley Park reads it.</text>
+  </g>
+
+  <!-- ============ Panel 4: install ============ -->
+  <g>
+    <rect x="12" y="206" width="636" height="202" rx="3" fill="#efe3c6"/>
+    <rect x="12" y="206" width="636" height="202" rx="3" fill="url(#dots)"/>
+    <!-- speed lines behind the arrow -->
+    <g stroke="#1b1b2f" stroke-width="1.4" opacity="0.18" stroke-linecap="round">
+      <path d="M290 262 H370"/><path d="M282 282 H378"/><path d="M286 336 H372"/><path d="M296 352 H364"/>
+    </g>
+
+    <!-- Receiver holding the app icon -->
+    <rect x="76" y="226" width="188" height="176" rx="14" fill="url(#wood)" class="ink"/>
+    <path class="ink" fill="none" d="M160 226 L146 214 M180 226 L196 213"/>
+    <circle cx="146" cy="214" r="3.5" fill="#1b1b2f"/><circle cx="196" cy="213" r="3.5" fill="#1b1b2f"/>
+    <g fill="none" stroke="#d63c3c" stroke-width="2.2" stroke-linecap="round">
+      <path d="M205 210 a9 9 0 0 1 3 10"/><path d="M212 206 a15 15 0 0 1 4 17"/>
+    </g>
+    <rect x="104" y="238" width="132" height="124" rx="16" fill="url(#glow)" stroke="#1b1b2f" stroke-width="3"/>
+    <rect x="110" y="244" width="120" height="112" rx="12" fill="none" stroke="#fffaf0" stroke-width="1.5" opacity="0.7"/>
+    <!-- knobs and grille -->
+    <circle cx="89" cy="262" r="7" fill="#d9c9a3" class="thin"/><circle cx="89" cy="290" r="7" fill="#d9c9a3" class="thin"/>
+    <circle cx="251" cy="262" r="7" fill="#d9c9a3" class="thin"/><circle cx="251" cy="290" r="7" fill="#d9c9a3" class="thin"/>
+    <g stroke="#3a2412" stroke-width="2" stroke-linecap="round"><path d="M84 316 H94 M84 324 H94 M84 332 H94 M84 340 H94"/>
+      <path d="M246 316 H256 M246 324 H256 M246 332 H256 M246 340 H256"/></g>
+    <rect x="104" y="364" width="132" height="22" rx="4" fill="#857252" class="thin"/>
+    <circle cx="111" cy="375" r="2" fill="#3a2f1e"/><circle cx="229" cy="375" r="2" fill="#3a2f1e"/>
+
+    <!-- Archive cabinet holding the Applications folder -->
+    <rect x="396" y="222" width="188" height="180" rx="6" fill="url(#steel)" class="ink"/>
+    <path class="thin" fill="none" d="M396 232 H584"/>
+    <rect x="424" y="238" width="132" height="124" rx="10" fill="url(#drawer)" stroke="#1b1b2f" stroke-width="3"/>
+    <g fill="#e2cf9f" stroke="#1b1b2f" stroke-width="1.4">
+      <path d="M430 252 h22 l4 -6 h20 l4 6 h22"/><path d="M502 252 h14 l4 -6 h20 l4 6 h6"/>
+    </g>
+    <g transform="rotate(-16 616 326)">
+      <rect x="587" y="311" width="58" height="30" rx="3" fill="none" stroke="#d63c3c" stroke-width="2.2"/>
+      <text x="616" y="323" text-anchor="middle" font-family="American Typewriter, Courier New" font-weight="700" font-size="10" fill="#d63c3c">TOP</text>
+      <text x="616" y="335" text-anchor="middle" font-family="American Typewriter, Courier New" font-weight="700" font-size="10" fill="#d63c3c">SECRET</text>
+    </g>
+    <rect x="424" y="364" width="132" height="22" rx="4" fill="#857252" class="thin"/>
+    <circle cx="431" cy="375" r="2" fill="#3a2f1e"/><circle cx="549" cy="375" r="2" fill="#3a2f1e"/>
+
+    <!-- Drag arrow -->
+    <path class="ink" fill="#6c5cff" d="M276 293 H346 V277 L384 302 L346 327 V311 H276 Z"/>
+    <path fill="none" stroke="#b9b0ff" stroke-width="2" stroke-linecap="round" d="M282 299 H344"/>
+    <g transform="rotate(-7 330 254)">
+      <path class="thin" fill="url(#burst)" d="M300 254 L310 244 L308 232 L320 238 L330 226 L336 238 L350 232 L348 244 L362 248 L350 256 L358 268 L344 266 L338 278 L330 268 L318 276 L316 264 L302 266 L310 256 Z"/>
+      <text x="331" y="259" text-anchor="middle" class="comic" font-size="13" style="fill:#d63c3c">DRAG!</text>
+    </g>
+
+    <!-- Captions -->
+    <rect x="22" y="216" width="46" height="66" fill="#ffe08a" class="thin"/>
+    <text class="caption" font-size="10" text-anchor="middle"><tspan x="45" y="232">TODAY,</tspan><tspan x="45" y="246">YOUR</tspan><tspan x="45" y="260">APP'S</tspan><tspan x="45" y="274">MAIL.</tspan></text>
+    <rect x="592" y="216" width="48" height="66" fill="#ffe08a" class="thin"/>
+    <text class="caption" font-size="10" text-anchor="middle"><tspan x="616" y="232">FILE</tspan><tspan x="616" y="246">IT IN</tspan><tspan x="616" y="260">APPLI-</tspan><tspan x="616" y="274">CATIONS</tspan></text>
+    <text x="330" y="356" text-anchor="middle" class="comic" font-size="11">Intercept every email</text>
+    <text x="330" y="370" text-anchor="middle" class="comic" font-size="11">your app sends.</text>
+  </g>
+  <rect x="12" y="206" width="636" height="202" rx="3" fill="none" class="ink"/>
+</svg>

@@ -81,22 +81,14 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 
 NAME="scratchpad-$VERSION-macos-$ARCH"
 DMG="$OUT/$NAME.dmg"
-# diskutil names the volume after this folder; older versions have no --volumeName.
-DMG_ROOT="$STAGE/dmg/Scratchpad"
-mkdir -p "$DMG_ROOT"
-cp -R "$APP" "$DMG_ROOT/"
-ln -s /Applications "$DMG_ROOT/Applications"
 rm -f "$DMG"
-# `diskutil image` replaces the deprecated `hdiutil create` on newer macOS (not on macos-15 runners).
-if diskutil image create from -h >/dev/null 2>&1; then
-  # Its progress goes to stderr; show the output only if it fails.
-  if ! LOG="$(diskutil image create from --format UDZO "$DMG_ROOT" "$DMG" 2>&1)"; then
-    echo "$LOG" >&2
-    exit 1
-  fi
-else
-  hdiutil create -volname "Scratchpad" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG" >/dev/null
-fi
+# dmgbuild lays out the window (comic strip background, icon positions) by writing .DS_Store
+# directly, without scripting Finder, so it works on CI runners. Pinned by hash.
+python3 -m venv "$STAGE/dmgbuild"
+"$STAGE/dmgbuild/bin/pip" install --quiet --disable-pip-version-check --require-hashes \
+  -r "$ROOT/packaging/macos/dmg-requirements.txt"
+"$STAGE/dmgbuild/bin/dmgbuild" -s "$ROOT/packaging/macos/dmg-settings.py" \
+  -D app="$APP" -D background="$ROOT/packaging/macos/dmg-background.tiff" Scratchpad "$DMG"
 [[ "$IDENTITY" != "-" ]] && codesign --force --timestamp --sign "$IDENTITY" "$DMG"
 
 if [[ "$IDENTITY" != "-" && -n "${APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID:-}" \
