@@ -45,7 +45,7 @@ Prereleases (any version with a `-` suffix) are marked as prereleases on GitHub,
 | `release` | Creates the GitHub release with checksums (GPG-signed when a key is configured) |
 | `store` | Uploads to Partner Center (optional, gated by the `microsoft-store` environment) |
 | `mac-app-store-upload` | Uploads to App Store Connect for TestFlight and review (optional, gated by the `mac-app-store` environment) |
-| `container` | Builds and pushes the multi-arch image (amd64, arm64, 386) and signs it with cosign |
+| `container` | Cross-compiles and pushes the multi-arch image (amd64, arm64, 386) to `ghcr.io`, attests it and signs it with cosign |
 
 A manual run (*Actions → Release → Run workflow*) builds and uploads everything as workflow
 artifacts without publishing, which is useful to test packaging changes.
@@ -83,14 +83,31 @@ Apple's log if notarization fails. To read the log of an earlier submission:
 Store secrets and variables are described in [windows-store.md](windows-store.md) and
 [mac-app-store.md](mac-app-store.md).
 
+## Container registry (ghcr.io)
+
+The `container` job pushes `ghcr.io/scalexy/scratchpad` with the workflow's `GITHUB_TOKEN`; no
+secrets are needed. Tags: `<version>` always, `<major>.<minor>` and `latest` for releases only.
+
+The first release creates the package as **private**. Once, after it:
+
+1. Open *ScaleXY → Packages → scratchpad → Package settings*.
+2. *Change visibility* → **Public**, so `docker pull` works without logging in. (If it's not
+   offered, allow public packages under the organization's *Settings → Packages*.)
+3. Check that *Manage Actions access* lists `ScaleXY/scratchpad` with **Write**. The image's
+   `org.opencontainers.image.source` label connects it to the repository on the first push; add
+   it by hand if the package was created some other way.
+
+To test the image locally: `docker buildx build --platform linux/amd64,linux/arm64,linux/386 .`
+
 ## Verifying a release
 
 ```sh
 sha256sum -c SHA256SUMS --ignore-missing
 gpg --verify SHA256SUMS.asc SHA256SUMS
-gh attestation verify scratchpad-1.2.0-linux-x64.tar.gz --repo scalexy/scratchpad
+gh attestation verify scratchpad-1.2.0-linux-x64.tar.gz --repo ScaleXY/scratchpad
+gh attestation verify oci://ghcr.io/scalexy/scratchpad:1.2.0 --repo ScaleXY/scratchpad
 cosign verify ghcr.io/scalexy/scratchpad:1.2.0 \
-  --certificate-identity-regexp 'https://github.com/scalexy/scratchpad/' \
+  --certificate-identity-regexp 'https://github.com/ScaleXY/scratchpad/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
