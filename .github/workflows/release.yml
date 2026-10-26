@@ -2,8 +2,8 @@
 # GitHub release, a multi-arch container image and (optionally) Microsoft Store and Mac App
 # Store uploads.
 #
-# Trigger: push a tag `vX.Y.Z` (or `vX.Y.Z-rc.N` for a prerelease) whose version matches
-# Cargo.toml. scripts/release.sh prepares that commit and tag; see docs/releasing.md.
+# Trigger: push a tag `vX.Y.Z` (or `vX.Y.Z-rc.N` for a prerelease). The tag is the version of every
+# artifact (SCRATCHPAD_VERSION, see crates/version.rs). scripts/release.sh prepares that commit and tag; see docs/releasing.md.
 # Manual runs (workflow_dispatch) build everything and upload workflow artifacts only.
 #
 # Secrets (all optional; artifacts are unsigned without them):
@@ -54,17 +54,22 @@ jobs:
       publish: ${{ steps.meta.outputs.publish }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Untagged runs describe the commit relative to the last tag.
+          fetch-depth: 0
       - id: meta
         name: Version
         run: |
-          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
           publish=false
           if [ "$GITHUB_REF_TYPE" = tag ]; then
-            if [ "$GITHUB_REF_NAME" != "v$version" ]; then
-              echo "::error::Tag $GITHUB_REF_NAME does not match the workspace version $version"
+            version="${GITHUB_REF_NAME#v}"
+            if ! [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+              echo "::error::Tag $GITHUB_REF_NAME is not a version (vX.Y.Z or vX.Y.Z-rc.N)"
               exit 1
             fi
             publish=true
+          else
+            version="$(scripts/version.sh)"
           fi
           case "$version" in *-*) prerelease=true ;; *) prerelease=false ;; esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -107,6 +112,7 @@ jobs:
           - { name: linux-x86,     os: ubuntu-22.04,     target: i686-unknown-linux-gnu }
           - { name: linux-arm64,   os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu }
     env:
+      SCRATCHPAD_VERSION: ${{ needs.prepare.outputs.version }}
       MACOSX_DEPLOYMENT_TARGET: "11.0"
       HAS_AZURE_SIGNING: ${{ secrets.AZURE_SIGNING_ENDPOINT != '' }}
     steps:
@@ -217,6 +223,8 @@ jobs:
     name: Microsoft Store package (MSIX)
     needs: [prepare, build]
     runs-on: windows-2022
+    env:
+      SCRATCHPAD_VERSION: ${{ needs.prepare.outputs.version }}
     permissions:
       contents: read
       id-token: write
@@ -263,6 +271,8 @@ jobs:
     name: Mac App Store package
     needs: [prepare, build]
     runs-on: macos-15
+    env:
+      SCRATCHPAD_VERSION: ${{ needs.prepare.outputs.version }}
     permissions:
       contents: read
       id-token: write
@@ -431,6 +441,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/386
+          build-args: SCRATCHPAD_VERSION=${{ needs.prepare.outputs.version }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -77,8 +77,8 @@ if [[ "${1:-}" == "--upload" ]]; then
 fi
 
 OUT="${1:-dist}"
-VERSION="$(cargo metadata --no-deps --format-version 1 --manifest-path "$ROOT/Cargo.toml" | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"]=="scratchpad"))')"
-SHORT_VERSION="${VERSION%%-*}"
+VERSION="$("$ROOT/scripts/version.sh")"
+SHORT_VERSION="${VERSION%%[-+]*}"
 export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-11.0}"
 
 BINS=()

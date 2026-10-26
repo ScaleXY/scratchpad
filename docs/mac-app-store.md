@@ -163,8 +163,8 @@ the build and submit it for review. Prereleases (`v1.2.0-rc.1`) are never upload
 
 ## Notes
 
-* **Versions.** `CFBundleShortVersionString` is the version from `Cargo.toml` without a
-  prerelease suffix and must be higher than the last approved version. `CFBundleVersion` (the
+* **Versions.** `CFBundleShortVersionString` is the version from the git tag without a
+  prerelease or build suffix and must be higher than the last approved version. `CFBundleVersion` (the
   build) is the same by default, and each upload of a version needs a new, higher build. To upload
   the same version again, set `MAS_BUILD_NUMBER`. It can have at most three numbers, so for
   `1.2.0` use e.g. `1.2.1`; the version shown in the Store stays `1.2.0`.

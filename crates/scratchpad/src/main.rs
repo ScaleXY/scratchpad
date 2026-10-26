@@ -22,7 +22,7 @@ use scratchpad_core::{Scratchpad, Settings};
 #[derive(Parser, Debug, Clone)]
 #[command(
     name = "scratchpad",
-    version,
+    version = env!("SCRATCHPAD_VERSION"),
     about = "Scratchpad - email testing and debugging for developers"
 )]
 pub struct Cli {
@@ -158,7 +158,7 @@ fn main() -> anyhow::Result<()> {
     if let Some(path) = logging::init(&cli.log, cli.log_format, desktop.then_some(&*log_dir)) {
         tracing::info!("logging to {}", path.display());
     }
-    tracing::info!("Scratchpad {}", env!("CARGO_PKG_VERSION"));
+    tracing::info!("Scratchpad {}", env!("SCRATCHPAD_VERSION"));
 
     let scratchpad = Scratchpad::open(&data_dir, |settings| cli.apply(settings))?;
 

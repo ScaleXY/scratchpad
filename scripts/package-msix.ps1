@@ -25,8 +25,7 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-$Metadata = cargo metadata --no-deps --format-version 1 --manifest-path "$Root\Cargo.toml" | ConvertFrom-Json
-$Version = ($Metadata.packages | Where-Object { $_.name -eq "scratchpad" }).version
+$Version = & "$PSScriptRoot\version.ps1"
 # MSIX versions are four numbers and the Store requires the last one to be 0.
 $Core = ($Version -split '[-+]')[0]
 $MsixVersion = "$Core.0"

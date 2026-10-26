@@ -4893,7 +4893,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "scratchpad"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4916,7 +4916,7 @@ dependencies = [
 
 [[package]]
 name = "scratchpad-core"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "argon2",
@@ -4949,7 +4949,7 @@ dependencies = [
 
 [[package]]
 name = "scratchpad-web"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "axum",

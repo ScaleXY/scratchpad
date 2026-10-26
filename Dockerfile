@@ -4,6 +4,8 @@
 # Keep the Rust version at or above workspace.package.rust-version.
 FROM rust:1.98-slim-bookworm AS build
 WORKDIR /src
+# .git isn't copied, so the version comes from here (the release workflow sets it from the tag).
+ARG SCRATCHPAD_VERSION=0.0.0
 COPY . .
 RUN cargo build --release --locked -p scratchpad --no-default-features \
  && strip target/release/scratchpad

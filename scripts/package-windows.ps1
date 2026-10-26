@@ -27,8 +27,7 @@ $Arch = switch ($Target) {
     default { throw "unsupported target $Target" }
 }
 
-$Metadata = cargo metadata --no-deps --format-version 1 --manifest-path "$Root\Cargo.toml" | ConvertFrom-Json
-$Version = ($Metadata.packages | Where-Object { $_.name -eq "scratchpad" }).version
+$Version = & "$PSScriptRoot\version.ps1"
 
 $Exe = Join-Path $Root "target\$Target\release\scratchpad.exe"
 if (-not (Test-Path $Exe)) {

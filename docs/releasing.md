@@ -5,19 +5,25 @@ a version tag is pushed.
 
 ## Cutting a release
 
-1. Make sure `main` is green in CI.
+1. Make sure `master` is green in CI.
 2. Add user-facing changes under `## [Unreleased]` in `CHANGELOG.md` as you go (*Added*,
    *Changed*, *Fixed*, *Security*, …).
-3. Run the release script on an up-to-date, clean `main`:
+3. Run the release script on an up-to-date, clean `master`:
 
    ```sh
    scripts/release.sh 1.2.0        # or 1.3.0-rc.1 for a prerelease
-   git push origin main v1.2.0
+   git push origin master v1.2.0
    ```
 
-   The script bumps the workspace version (`Cargo.toml`, `Cargo.lock`), moves the *Unreleased*
-   entries under `## [1.2.0] - <date>`, updates the comparison links, checks that the workspace
-   builds, commits `Release v1.2.0` and creates an annotated tag. It doesn't push.
+   The script moves the *Unreleased* entries under `## [1.2.0] - <date>`, updates the
+   comparison links, checks that the workspace builds, commits `Release v1.2.0` and creates an
+   annotated tag. It doesn't push.
+
+   The tag is the version: builds take it from `git describe` (`crates/version.rs`,
+   `scripts/version.sh`), so `Cargo.toml` stays at `0.0.0`. A commit after a tag builds as
+   e.g. `1.2.0+3.gabc1234`, and a build without git or tags as `0.0.0`. Set
+   `SCRATCHPAD_VERSION` to override it, as the release workflow and `docker build
+   --build-arg SCRATCHPAD_VERSION=…` do.
 4. Watch the *Release* workflow. When it finishes:
    * the GitHub release `Scratchpad 1.2.0` has every artifact, `SHA256SUMS` (+ `.asc`) and the
      changelog section as release notes;
@@ -32,7 +38,7 @@ Prereleases (any version with a `-` suffix) are marked as prereleases on GitHub,
 
 | Job | |
 | --- | --- |
-| `prepare` | Fails if the tag doesn't equal `v` + the workspace version; extracts the release notes from `CHANGELOG.md` |
+| `prepare` | Takes the version from the tag (fails unless it's `vX.Y.Z` or `vX.Y.Z-suffix`) and passes it to every job as `SCRATCHPAD_VERSION`; extracts the release notes from `CHANGELOG.md` |
 | `build` (8 targets) | Builds, runs the test suite and a smoke test (SMTP capture, health check, web API, export), packages, signs and attests |
 | `msix` | Builds the Microsoft Store `.msixbundle`/`.msixupload` from the Windows builds |
 | `mac-app-store` | Builds the sandboxed universal Mac App Store `.pkg` from the macOS builds |

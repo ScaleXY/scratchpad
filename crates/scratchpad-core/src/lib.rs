@@ -34,7 +34,7 @@ pub use s3::{CredentialStorage, S3Check, S3Config, S3ConfigInfo, S3Mode, Visibil
 pub use settings::{ForwardEncryption, ForwardSettings, Settings, ThemePreference};
 use store::{NewEmail, Store};
 
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("SCRATCHPAD_VERSION");
 
 /// macOS bundle identifier (`packaging/macos/Info.plist`).
 pub const BUNDLE_ID: &str = "com.scalexy.scratchpad";
@@ -129,14 +129,14 @@ impl Scratchpad {
         let http = reqwest::Client::builder()
             .user_agent(concat!(
                 "Scratchpad/",
-                env!("CARGO_PKG_VERSION"),
+                env!("SCRATCHPAD_VERSION"),
                 " link-checker"
             ))
             .redirect(reqwest::redirect::Policy::limited(10))
             .tls_backend_preconfigured((*tls::client_config()).clone())
             .build()?;
         let s3_http = reqwest::Client::builder()
-            .user_agent(concat!("Scratchpad/", env!("CARGO_PKG_VERSION")))
+            .user_agent(concat!("Scratchpad/", env!("SCRATCHPAD_VERSION")))
             .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(Duration::from_secs(15))
             .timeout(Duration::from_secs(300))

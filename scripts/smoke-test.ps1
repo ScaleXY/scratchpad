@@ -7,7 +7,8 @@ New-Item -ItemType Directory -Path $Data | Out-Null
 $Base = "http://127.0.0.1:28025"
 $Auth = @{ Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("smoke:test")) }
 
-& $Binary --version
+# Piping makes PowerShell wait for the GUI-subsystem executable (see --healthcheck below).
+& $Binary --version | Out-Host
 $process = Start-Process -FilePath $Binary -PassThru -NoNewWindow `
     -ArgumentList "--headless", "--data-dir", "`"$Data`"", "--smtp-port", "22525", "--web-port", "28025", "--web-auth", "smoke:test" `
     -RedirectStandardOutput (Join-Path $Data "out.log") -RedirectStandardError (Join-Path $Data "err.log")
@@ -17,8 +18,12 @@ try {
         try { Invoke-RestMethod "$Base/healthz" | Out-Null; $ready = $true } catch { Start-Sleep -Milliseconds 200 }
     }
     if (-not $ready) { Get-Content (Join-Path $Data "err.log"); throw "server did not start" }
-    & $Binary --healthcheck --data-dir "$Data" --web-port 28025
-    if ($LASTEXITCODE -ne 0) { throw "--healthcheck failed" }
+    # Release builds are GUI-subsystem executables, which PowerShell doesn't wait for when run
+    # with `&`, leaving $LASTEXITCODE unset. Start-Process -Wait gives the real exit code.
+    $check = Start-Process -FilePath $Binary -PassThru -Wait -NoNewWindow `
+        -ArgumentList "--healthcheck", "--data-dir", "`"$Data`"", "--web-port", "28025" `
+        -RedirectStandardError (Join-Path $Data "healthcheck.log")
+    if ($check.ExitCode -ne 0) { Get-Content (Join-Path $Data "healthcheck.log"); throw "--healthcheck failed ($($check.ExitCode))" }
 
     try { Invoke-RestMethod "$Base/api/status" | Out-Null; throw "expected 401 without credentials" }
     catch { if ($_.Exception.Response.StatusCode.value__ -ne 401) { throw } }

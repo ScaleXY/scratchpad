@@ -89,7 +89,7 @@ fn prints_version() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert_eq!(
         stdout.trim(),
-        format!("scratchpad {}", env!("CARGO_PKG_VERSION"))
+        format!("scratchpad {}", env!("SCRATCHPAD_VERSION"))
     );
 }
 

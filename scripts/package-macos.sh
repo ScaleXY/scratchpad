@@ -19,7 +19,7 @@ set -euo pipefail
 TARGET="${1:?usage: package-macos.sh <target> [out-dir]}"
 OUT="${2:-dist}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(cargo metadata --no-deps --format-version 1 --manifest-path "$ROOT/Cargo.toml" | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"]=="scratchpad"))')"
+VERSION="$("$ROOT/scripts/version.sh")"
 case "$TARGET" in
   aarch64-apple-darwin) ARCH=arm64 ;;
   x86_64-apple-darwin) ARCH=x64 ;;
@@ -39,8 +39,8 @@ APP="$STAGE/Scratchpad.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/scratchpad"
 cp "$ROOT/packaging/icons/scratchpad.icns" "$APP/Contents/Resources/scratchpad.icns"
-# Bundle versions must be dotted integers: 1.3.0-rc.1 becomes 1.3.0.
-sed "s/__VERSION__/${VERSION%%-*}/g" "$ROOT/packaging/macos/Info.plist" > "$APP/Contents/Info.plist"
+# Bundle versions must be dotted integers: 1.3.0-rc.1 and 1.3.0+2.gabc1234 become 1.3.0.
+sed "s/__VERSION__/${VERSION%%[-+]*}/g" "$ROOT/packaging/macos/Info.plist" > "$APP/Contents/Info.plist"
 
 KEYCHAIN=""
 cleanup() {

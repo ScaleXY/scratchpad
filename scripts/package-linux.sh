@@ -12,7 +12,7 @@ set -euo pipefail
 TARGET="${1:?usage: package-linux.sh <target> [out-dir]}"
 OUT="${2:-dist}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(cargo metadata --no-deps --format-version 1 --manifest-path "$ROOT/Cargo.toml" | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"]=="scratchpad"))')"
+VERSION="$("$ROOT/scripts/version.sh")"
 case "$TARGET" in
   x86_64-unknown-linux-gnu) ARCH=x64; DEB_ARCH=amd64 ;;
   i686-unknown-linux-gnu) ARCH=x86; DEB_ARCH=i386 ;;

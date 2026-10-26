@@ -132,7 +132,7 @@ and `finalize` (see the CLI docs).
 
 ## Notes
 
-* **Versions.** The MSIX version is `<major>.<minor>.<patch>.0` from `Cargo.toml`. Every
+* **Versions.** The MSIX version is `<major>.<minor>.<patch>.0` from the git tag. Every
   submission needs a higher version than the last one; the fourth number must stay `0`.
 * **Data location.** Packaged apps write `%APPDATA%` into the package's private folder
   (`%LOCALAPPDATA%\Packages\<package family name>\LocalCache\Roaming\ScaleXY\Scratchpad`). Data from the

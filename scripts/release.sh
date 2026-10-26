@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Prepares a release: bumps the workspace version, moves the "Unreleased" changelog entries
-# under the new version, commits and creates the tag. Nothing is pushed.
+# Prepares a release: moves the "Unreleased" changelog entries under the new version, commits
+# and creates the tag, which is the version of the build. Nothing is pushed.
 #   scripts/release.sh 1.2.0          # or 1.3.0-rc.1 for a prerelease
-#   git push origin main v1.2.0       # starts .github/workflows/release.yml
+#   git push origin HEAD v1.2.0       # starts .github/workflows/release.yml
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -25,10 +25,7 @@ if ! awk '/^## \[Unreleased\]/{f=1;next} /^## \[/{f=0} f && /[^[:space:]]/{n=1} 
   exit 1
 fi
 
-# Workspace version (the first `version = ` line, inside [workspace.package]).
-current=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
-perl -0pi -e "s/^version = \"\Q$current\E\"/version = \"$version\"/m" Cargo.toml
-cargo update --workspace --offline >/dev/null 2>&1 || cargo update --workspace >/dev/null
+current="$(scripts/version.sh)"
 
 today=$(date -u +%Y-%m-%d)
 perl -0pi -e "s/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$version] - $today\n/m" CHANGELOG.md
@@ -38,7 +35,7 @@ perl -0pi -e "s{^\[Unreleased\]: (.*)/compare/v[^.\s]+\.[^.\s]+\.\S+?\.\.\.HEAD\
 scripts/release-notes.sh "$version" >/dev/null
 cargo check --workspace --locked --quiet
 
-git add Cargo.toml Cargo.lock CHANGELOG.md
+git add CHANGELOG.md
 git commit -m "Release $tag"
 git tag -a "$tag" -m "Scratchpad $version"
 echo "Created $tag ($current -> $version). Push with: git push origin HEAD $tag"

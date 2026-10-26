@@ -3,7 +3,8 @@ resolver = "2"
 members = ["crates/scratchpad-core", "crates/scratchpad-web", "crates/scratchpad"]
 
 [workspace.package]
-version = "0.1.0"
+# Unused: builds take their version from the git tag (crates/version.rs, scripts/version.sh).
+version = "0.0.0"
 edition = "2021"
 license = "MIT"
 authors = ["ScaleXY"]

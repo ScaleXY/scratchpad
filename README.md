@@ -243,7 +243,7 @@ scripts/smoke-test.sh target/release/scratchpad        # end-to-end check of a b
 
 ## Releases
 
-`scripts/release.sh 1.2.0` bumps the version, moves the changelog entries and tags the release;
+The git tag is the version of every build. `scripts/release.sh 1.2.0` moves the changelog entries and tags the release;
 pushing the tag runs `.github/workflows/release.yml`. It builds, tests, smoke-tests, signs and
 packages all eight targets on native GitHub runners, then publishes a GitHub release (notes from
 `CHANGELOG.md`, checksums, provenance attestations), a signed multi-arch (`amd64`, `arm64`, `386`)
