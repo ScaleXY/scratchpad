@@ -1,35 +1,114 @@
+<div align="center">
+
+<img src="packaging/icons/scratchpad-256.png" alt="Scratchpad" width="96" height="96">
+
 # Scratchpad
 
-Email testing and debugging for developers, by [ScaleXY](https://scalexy.com). Your applications
-send email to Scratchpad's local SMTP server instead of real inboxes. You then inspect the captured
-messages in a native desktop app (built with [iced](https://iced.rs)) or in a web interface.
-Scratchpad can also run **headless** on a server and be used entirely from the browser.
+**Email testing and debugging for developers.**
+Catch every email your app sends on a local SMTP server and inspect it in a native desktop app or
+in the browser.
 
-```
-scratchpad                 # desktop app (+ web interface on http://127.0.0.1:8025)
-scratchpad --headless      # SMTP server + web interface only, for servers and containers
-```
+[![CI](https://github.com/ScaleXY/scratchpad/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ScaleXY/scratchpad/actions/workflows/ci.yml)
+[![Release build](https://github.com/ScaleXY/scratchpad/actions/workflows/release.yml/badge.svg)](https://github.com/ScaleXY/scratchpad/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/ScaleXY/scratchpad?include_prereleases&sort=semver&label=release)](https://github.com/ScaleXY/scratchpad/releases)
+[![License: MIT](https://img.shields.io/github/license/ScaleXY/scratchpad)](LICENSE)
+[![Rust 1.90+](https://img.shields.io/badge/rust-1.90%2B-orange?logo=rust)](https://www.rust-lang.org)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20Docker-lightgrey)](#supported-platforms)
+
+[Download](https://github.com/ScaleXY/scratchpad/releases) ·
+[Quick start](#quick-start) ·
+[Features](#features) ·
+[Headless & Docker](#running-headless-servers-ci-containers) ·
+[Web API](#web-api) ·
+[Building](#building-from-source)
+
+<img src="docs/screenshots/web-inbox-dark.png" alt="Scratchpad web interface showing a captured welcome email" width="900">
+
+</div>
+
+## Why Scratchpad
+
+Point your app's SMTP settings at Scratchpad instead of a real mail server. Every message is
+captured, never delivered, and shows up instantly with everything you need to debug it: the
+rendered HTML on real device sizes, text and raw source, headers, attachments, broken links and a
+spam score. It runs as a native desktop app (built with [iced](https://iced.rs)) or **headless**
+on a server, where the whole thing is used from the browser.
+
+Built by [ScaleXY](https://scalexy.com). Free and open source under the MIT license.
+
+## Quick start
+
+1. **Install.** Download the installer for your platform from the
+   [latest release](https://github.com/ScaleXY/scratchpad/releases) (`.dmg`, `-setup.exe`,
+   `.deb`, or a `.tar.gz`/`.zip`), or run the container:
+
+   ```sh
+   docker run -d -p 2525:2525 -p 8025:8025 -v scratchpad-data:/data ghcr.io/scalexy/scratchpad
+   ```
+
+2. **Start it.**
+
+   ```sh
+   scratchpad                 # desktop app (+ web interface on http://127.0.0.1:8025)
+   scratchpad --headless      # SMTP server + web interface only, for servers and containers
+   ```
+
+3. **Point your app at it.** SMTP host `127.0.0.1`, port `2525`, no encryption. The username
+   picks the mailbox and any password works. For Laravel:
+
+   ```dotenv
+   MAIL_MAILER=smtp
+   MAIL_HOST=127.0.0.1
+   MAIL_PORT=2525
+   MAIL_USERNAME=My-Project
+   MAIL_PASSWORD=null
+   MAIL_ENCRYPTION=null
+   ```
+
+   The *Setup* page has ready-to-copy snippets for Laravel, Symfony, WordPress, Nodemailer, Rails,
+   Django and Go, plus a **Send test email** button.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/desktop-inbox-dark.png" alt="Desktop app, dark theme"><br><sub><b>Desktop app</b>: pure black dark theme</sub></td>
+    <td width="50%"><img src="docs/screenshots/web-inbox-light.png" alt="Web interface, light theme"><br><sub><b>Web interface</b>: light theme with the HTML preview</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/web-devices-dark.png" alt="Mobile, tablet and desktop previews side by side"><br><sub><b>Multi-device preview</b>: mobile, tablet and desktop at real viewport sizes</sub></td>
+    <td><img src="docs/screenshots/desktop-spam-dark.png" alt="Spam report"><br><sub><b>Spam report</b>: SpamAssassin, with built-in heuristics as a fallback</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-share-dark.png" alt="Share dialog"><br><sub><b>Sharing</b>: upload to your own S3 bucket, public or expiring links</sub></td>
+    <td><img src="docs/screenshots/web-setup-dark.png" alt="Setup page with framework snippets"><br><sub><b>Setup</b>: copy-paste config for popular frameworks</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-inbox-light.png" alt="Desktop app, light theme"><br><sub><b>Desktop app</b>: light theme</sub></td>
+    <td align="center"><img src="docs/screenshots/web-mobile-light.png" alt="Web interface on a phone" width="45%"><br><sub><b>Responsive web UI</b>: works on a phone too</sub></td>
+  </tr>
+</table>
 
 ## Features
 
 | Feature | Details |
 | --- | --- |
-| Local SMTP server that captures all mail | ✅ port `2525` by default, `AUTH PLAIN/LOGIN`, `PIPELINING`, `8BITMIME`, `SMTPUTF8`, `SIZE`, optional `STARTTLS` |
-| Unlimited mailboxes, created automatically from the SMTP username | ✅ any password is accepted; mail without credentials goes to **Default** |
-| Sender, recipients, CC and BCC | ✅ BCC is derived from SMTP envelope recipients missing from To/Cc |
-| HTML, plain text, HTML source, raw message and headers | ✅ sandboxed HTML preview with **multi-device previews** (see below) |
-| Attachments, including inline `cid:` images | ✅ open or save; inline images render in the HTML preview |
-| Link checker (HEAD, falling back to GET), can be turned off | ✅ |
-| SpamAssassin spam report, can be turned off | ✅ via `spamd` (`127.0.0.1:783`); built-in heuristics when SpamAssassin is not installed |
-| Laravel view inspector (`beyondcode/helo-laravel`) | ✅ decodes the `X-HELO-View`, `X-HELO-View-File` and `X-HELO-View-Data` headers |
-| Forward emails via a custom SMTP server | ✅ none / STARTTLS / TLS, with optional sender override |
-| Share single emails or whole inboxes, list and revoke shares | ✅ **cloud shares** uploaded to your own S3-compatible bucket, or live links served by your Scratchpad web server (see below) |
-| Remote mailboxes for live and staging apps | ✅ poll an **IMAP account**, or another **Scratchpad instance** running headless on your server |
-| Desktop notifications for new mail | ✅ desktop app and web interface |
-| Keyboard navigation | ✅ `↑`/`↓` (or `j`/`k`) to move, `Backspace`/`Delete` to delete, `1`–`9` to switch tabs (desktop) |
-| Bulk delete emails and whole inboxes | ✅ multi-select, empty mailbox, delete mailbox |
-| Search | ✅ subject, sender, recipients and preview |
-| Export | ✅ any email (or a selection) as **one self-contained `.html` file** with the viewer built in |
+| Local SMTP server that captures all mail | port `2525` by default, `AUTH PLAIN/LOGIN`, `PIPELINING`, `8BITMIME`, `SMTPUTF8`, `SIZE`, optional `STARTTLS` |
+| Unlimited mailboxes, created from the SMTP username | any password is accepted; mail without credentials goes to **Default** |
+| Sender, recipients, CC and BCC | BCC is derived from SMTP envelope recipients missing from To/Cc |
+| HTML, plain text, HTML source, raw message and headers | sandboxed HTML preview with [multi-device previews](#multi-device-previews) |
+| Attachments, including inline `cid:` images | open or save; inline images render in the HTML preview |
+| Link checker | HEAD, falling back to GET; can be turned off |
+| Spam report | SpamAssassin via `spamd` (`127.0.0.1:783`); built-in heuristics when it isn't installed; can be turned off |
+| Laravel view inspector | decodes the `X-HELO-View*` headers of [`beyondcode/helo-laravel`](https://github.com/beyondcode/helo-laravel) |
+| Forwarding | through any SMTP server (none / STARTTLS / TLS), with optional sender override |
+| Sharing | single emails or whole inboxes, as [cloud shares](#export-and-cloud-sharing) in your own S3-compatible bucket or live links from your Scratchpad server; list and revoke shares |
+| Remote mailboxes | poll an **IMAP account** or another **Scratchpad instance** running headless next to your staging app |
+| Export | any email (or a selection) as **one self-contained `.html` file** with the viewer built in |
+| Search and bulk actions | search subject, sender, recipients and preview; multi-select, empty or delete mailboxes |
+| Desktop notifications | in the desktop app and the web interface |
+| Keyboard navigation | `↑`/`↓` (or `j`/`k`) to move, `Backspace`/`Delete` to delete, `1`–`9` to switch tabs (desktop) |
+| Themes | System, Light or a pure black (`#000000`) Dark; [Inter](https://rsms.me/inter/) and [Lucide](https://lucide.dev) icons are bundled, so it looks the same everywhere |
 
 Good to know:
 
@@ -37,22 +116,18 @@ Good to know:
   live links point at your own web interface (set *Public URL* when Scratchpad runs behind a domain).
 * **The desktop app's preview is a text rendering.** iced has no HTML engine. *Open in browser*
   shows the real HTML with all device previews from an exported file, so it works offline.
-* **The view inspector reads the headers of the `beyondcode/helo-laravel` package.** Install it in
-  your Laravel app (`composer require --dev beyondcode/helo-laravel`) to see the view behind each
-  mailable.
+* **The view inspector needs `beyondcode/helo-laravel`** in your Laravel app
+  (`composer require --dev beyondcode/helo-laravel`) to see the view behind each mailable.
 
-## Design
+## Pointing your app at Scratchpad
 
-Both UIs share one design system: a neutral light theme and a **pure black (`#000000`) dark
-theme**, the [Inter](https://rsms.me/inter/) typeface and [Lucide](https://lucide.dev) icons.
-Both are bundled, so the app looks the same on every platform. Choose *System*, *Light* or *Dark*
-from the switcher at the bottom of the sidebar. The web UI stores its choice per browser.
-
-To render screenshots of the desktop UI without a display (useful for docs and visual review):
-
-```sh
-cargo test -p scratchpad -- --ignored gui_snapshots   # writes target/gui-snapshots/*.png
-```
+| Setting | Value |
+| --- | --- |
+| Host | `127.0.0.1` (`host.docker.internal` from Docker, `10.0.2.2` from Vagrant/Homestead) |
+| Port | `2525` |
+| Username | the mailbox name, e.g. `My-Project` (optional) |
+| Password | anything |
+| Encryption | none |
 
 ## Multi-device previews
 
@@ -109,30 +184,6 @@ The cloud backend is a stub for now: it mirrors the encrypted vault to `cloud-sy
 data directory, so *Sync now* and *Restore from cloud* can already be exercised. The real service
 plugs in by implementing `scratchpad_core::vault::SyncBackend`.
 
-## Pointing your app at Scratchpad
-
-| Setting | Value |
-| --- | --- |
-| Host | `127.0.0.1` (`host.docker.internal` from Docker, `10.0.2.2` from Vagrant/Homestead) |
-| Port | `2525` |
-| Username | the mailbox name, e.g. `My-Project` (optional) |
-| Password | anything |
-| Encryption | none |
-
-Laravel `.env`:
-
-```dotenv
-MAIL_MAILER=smtp
-MAIL_HOST=127.0.0.1
-MAIL_PORT=2525
-MAIL_USERNAME=Inbox-Name
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=null
-```
-
-The *Setup* page in both UIs has ready-to-copy snippets for Laravel, Symfony, WordPress, Nodemailer,
-Rails and Django, plus a **Send test email** button.
-
 ## Running headless (servers, CI, containers)
 
 ```sh
@@ -177,6 +228,9 @@ the `scratchpad` user. Configure it in `/etc/default/scratchpad`, then run
 the desktop app, add a *Remote mailbox* of type *Scratchpad server* that points at its URL. New mail
 then shows up locally.
 
+Exposing Scratchpad beyond `127.0.0.1`? Read the [deployment notes](SECURITY.md#deployment-notes)
+first.
+
 ### Web API
 
 The web interface uses a JSON API under `/api`, which you can also script against (for example in
@@ -206,17 +260,18 @@ end-to-end tests):
 | Windows 10/11 | x86 (32-bit), x64, arm64 | `*-setup.exe` (Inno Setup), `.zip`, Microsoft Store (MSIX bundle) | Authenticode via `signtool` (PFX) or Azure Trusted Signing; the Store signs Store packages |
 | macOS 11+ | x64, arm64 | `.dmg`, `.app` zip, CLI `.tar.gz`, Mac App Store (sandboxed universal `.pkg`) | Developer ID + hardened runtime + notarization (ad-hoc without a certificate); Apple re-signs Store packages |
 | Ubuntu 22.04+ | x86 (32-bit), x64, arm64 | `.deb`, `.tar.gz` | detached GPG signatures (`.asc`) |
+| Containers | `amd64`, `arm64`, `386` | `ghcr.io/scalexy/scratchpad` | cosign |
 
 Every release artifact also gets a Sigstore build-provenance attestation
-(`gh attestation verify <file> -R scalexy/scratchpad`). The `SHA256SUMS` file is GPG signed and the
-container image is signed with cosign.
+(`gh attestation verify <file> -R scalexy/scratchpad`), and the `SHA256SUMS` file is GPG signed.
+See [docs/releasing.md](docs/releasing.md) for how to verify downloads.
 
 On Linux the GUI loads X11/Wayland, xkbcommon and the GPU drivers at runtime, so the binary links
-only against glibc. Headless mode has no runtime dependencies beyond glibc. Save and export dialogs use the
-XDG desktop portal (`xdg-desktop-portal`, installed on standard Ubuntu desktops and recommended
-by the `.deb`).
+only against glibc. Headless mode has no runtime dependencies beyond glibc. Save and export dialogs
+use the XDG desktop portal (`xdg-desktop-portal`, installed on standard Ubuntu desktops and
+recommended by the `.deb`).
 
-## Building
+## Building from source
 
 Requires Rust 1.90 or newer.
 
@@ -241,23 +296,27 @@ pwsh scripts/package-windows.ps1 -Target aarch64-pc-windows-msvc   # needs clang
 scripts/smoke-test.sh target/release/scratchpad        # end-to-end check of a built binary
 ```
 
+**Screenshots.** Both UIs can be rendered without a display, which is how the images in
+[`docs/screenshots`](docs/screenshots) are made:
+
+```sh
+cargo test -p scratchpad -- --ignored gui_snapshots    # desktop UI → target/gui-snapshots/*.png
+SCRATCHPAD_BIN=target/debug/scratchpad SCREENSHOTS=target/web-snapshots \
+  node crates/scratchpad-web/tests/ui/smoke.mjs        # web UI (headless Chrome)
+```
+
 ## Releases
 
-The git tag is the version of every build. `scripts/release.sh 1.2.0` moves the changelog entries and tags the release;
-pushing the tag runs `.github/workflows/release.yml`. It builds, tests, smoke-tests, signs and
-packages all eight targets on native GitHub runners, then publishes a GitHub release (notes from
-`CHANGELOG.md`, checksums, provenance attestations), a signed multi-arch (`amd64`, `arm64`, `386`)
-container image and, when configured, Microsoft Store and Mac App Store uploads. Without signing
-secrets it still produces unsigned (ad-hoc on macOS) artifacts.
+The git tag is the version of every build. `scripts/release.sh 1.2.0` moves the changelog entries
+and tags the release; pushing the tag runs `.github/workflows/release.yml`. It builds, tests,
+smoke-tests, signs and packages all eight targets on native GitHub runners, then publishes a GitHub
+release (notes from [`CHANGELOG.md`](CHANGELOG.md), checksums, provenance attestations), a signed
+multi-arch container image and, when configured, Microsoft Store and Mac App Store uploads.
+Without signing secrets it still produces unsigned (ad-hoc on macOS) artifacts.
 
 * [docs/releasing.md](docs/releasing.md): release process, secrets, verifying downloads
 * [docs/windows-store.md](docs/windows-store.md): publishing to the Microsoft Store
 * [docs/mac-app-store.md](docs/mac-app-store.md): publishing to the Mac App Store
-
-## Third-party assets
-
-* Inter, © The Inter Project Authors, SIL Open Font License 1.1 (`assets/fonts/LICENSE-Inter.txt`)
-* Lucide icons, ISC License (`assets/icons/LICENSE`); regenerate with `scripts/build-icons.py`
 
 ## Project layout
 
@@ -270,5 +329,19 @@ crates/scratchpad-web    axum REST API, SSE events, share pages, embedded single
 crates/scratchpad        the `scratchpad` binary: CLI, headless mode, iced desktop GUI (feature `gui`)
 assets/                  shared fonts (Inter) and icons (Lucide)
 packaging/               app icons, macOS bundle files, Windows installer, Linux desktop/systemd/deb files
-scripts/                 packaging, signing and smoke-test scripts
+scripts/                 packaging, signing, release and smoke-test scripts
+docs/                    release and store publishing guides, screenshots
 ```
+
+## Security
+
+Please report vulnerabilities privately; see [SECURITY.md](SECURITY.md).
+
+## License
+
+[MIT](LICENSE) © ScaleXY.
+
+Third-party assets:
+
+* Inter, © The Inter Project Authors, SIL Open Font License 1.1 (`assets/fonts/LICENSE-Inter.txt`)
+* Lucide icons, ISC License (`assets/icons/LICENSE`); regenerate with `scripts/build-icons.py`

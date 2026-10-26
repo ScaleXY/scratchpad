@@ -117,7 +117,7 @@ cosign verify ghcr.io/scalexy/scratchpad:1.2.0 \
 
 ## When something goes wrong
 
-* **A build job failed:** fix the problem on `main`, delete the tag
+* **A build job failed:** fix the problem on `master`, delete the tag
   (`git push --delete origin v1.2.0 && git tag -d v1.2.0`), delete the draft or partial release if
   one was created, and release again. Re-running failed jobs is fine for flaky infrastructure.
 * **A bad release went out:** publish a patch release (`1.2.1`). Don't reuse tags. In the Store,
