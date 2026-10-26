@@ -4,10 +4,15 @@
 #   scripts/package-macos.sh <aarch64-apple-darwin|x86_64-apple-darwin> [out-dir]
 #
 # Signing is controlled by environment variables (all optional):
-#   MACOS_CERTIFICATE           base64 encoded Developer ID Application .p12
-#   MACOS_CERTIFICATE_PASSWORD  password of the .p12
-#   MACOS_SIGNING_IDENTITY      e.g. "Developer ID Application: ScaleXY (TEAMID)"
-#   APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD   credentials for notarization
+#   APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64
+#       base64 encoded Developer ID Application .p12
+#   APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD
+#       password of the .p12
+#   APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_IDENTITY
+#       e.g. "Developer ID Application: ScaleXY (TEAMID)"
+#   APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID, APPLE_DEVELOPER_ACCOUNT_TEAM_ID,
+#   APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID_APP_PASSWORD
+#       credentials for notarization
 # Without a certificate the app is ad-hoc signed (runs locally, Gatekeeper will warn).
 set -euo pipefail
 
@@ -45,27 +50,27 @@ cleanup() {
 trap cleanup EXIT
 
 IDENTITY="-"
-if [[ -n "${MACOS_CERTIFICATE:-}" ]]; then
+if [[ -n "${APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64:-}" ]]; then
   KEYCHAIN="$STAGE/signing.keychain-db"
   KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
-  echo "$MACOS_CERTIFICATE" | base64 --decode > "$STAGE/cert.p12"
+  echo "$APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64" | base64 --decode > "$STAGE/cert.p12"
   security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
   security set-keychain-settings -lut 21600 "$KEYCHAIN"
   security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-  security import "$STAGE/cert.p12" -k "$KEYCHAIN" -P "${MACOS_CERTIFICATE_PASSWORD:-}" -T /usr/bin/codesign
+  security import "$STAGE/cert.p12" -k "$KEYCHAIN" -P "${APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD:-}" -T /usr/bin/codesign
   security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
   security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
-  IDENTITY="${MACOS_SIGNING_IDENTITY:?MACOS_SIGNING_IDENTITY is required with MACOS_CERTIFICATE}"
+  IDENTITY="${APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_IDENTITY:?APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_IDENTITY is required with APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64}"
   # Notarization only accepts Developer ID; "Apple Distribution" is for the App Store
   # (scripts/package-macos-appstore.sh). A SHA-1 hash is checked against the keychain.
   if ! security find-identity -v -p codesigning | grep -F "$IDENTITY" | grep -q '"Developer ID Application: '; then
-    echo "MACOS_SIGNING_IDENTITY must be a \"Developer ID Application\" certificate, not: $IDENTITY" >&2
+    echo "APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_IDENTITY must be a \"Developer ID Application\" certificate, not: $IDENTITY" >&2
     security find-identity -v -p codesigning >&2
     exit 1
   fi
   echo "Signing with: $IDENTITY"
 else
-  echo "MACOS_CERTIFICATE not set: ad-hoc signing (not notarized)"
+  echo "APPLE_DEVELOPER_ACCOUNT_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64 not set: ad-hoc signing (not notarized)"
 fi
 
 codesign --force --timestamp --options runtime --entitlements "$ROOT/packaging/macos/entitlements.plist" \
@@ -93,9 +98,11 @@ else
 fi
 [[ "$IDENTITY" != "-" ]] && codesign --force --timestamp --sign "$IDENTITY" "$DMG"
 
-if [[ "$IDENTITY" != "-" && -n "${APPLE_ID:-}" && -n "${APPLE_APP_PASSWORD:-}" && -n "${APPLE_TEAM_ID:-}" ]]; then
+if [[ "$IDENTITY" != "-" && -n "${APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID:-}" \
+  && -n "${APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID_APP_PASSWORD:-}" && -n "${APPLE_DEVELOPER_ACCOUNT_TEAM_ID:-}" ]]; then
   echo "Notarizing $DMG"
-  NOTARY_AUTH=(--apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD")
+  NOTARY_AUTH=(--apple-id "$APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID" --team-id "$APPLE_DEVELOPER_ACCOUNT_TEAM_ID"
+    --password "$APPLE_DEVELOPER_ACCOUNT_OWNER_APPLE_ID_APP_PASSWORD")
   RESULT="$(xcrun notarytool submit "$DMG" "${NOTARY_AUTH[@]}" --wait --output-format json)"
   echo "$RESULT"
   read -r SUBMISSION_ID STATUS < <(python3 -c 'import json,sys; r=json.loads(sys.argv[1]); print(r.get("id",""), r.get("status",""))' "$RESULT")

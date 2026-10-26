@@ -12,13 +12,20 @@
 #                               application identifier are read from it. Without a profile the
 #                               app is ad-hoc signed with the sandbox entitlements and the .pkg is
 #                               unsigned: a local test build that can't be uploaded.
-#   MAS_APP_IDENTITY            default "Apple Distribution"
-#   MAS_INSTALLER_IDENTITY      default "3rd Party Mac Developer Installer"
-#   MAS_CERTIFICATES            base64 .p12 with both certificates and their keys (CI); without it
-#   MAS_CERTIFICATES_PASSWORD   the login keychain is used
+#   APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_IDENTITY
+#                               default "Apple Distribution"
+#   APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_IDENTITY
+#                               default "3rd Party Mac Developer Installer"
+#   APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64
+#   APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD
+#   APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64
+#   APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_PASSWORD
+#                               base64 .p12 of each certificate with its key, and its password
+#                               (CI); without them the login keychain is used
 #   MAS_BUILD_NUMBER            CFBundleVersion (default: the version), to re-upload a version
 # Upload (App Store Connect API key with the App Manager role):
-#   APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY (.p8 contents)
+#   APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID, APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID,
+#   APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY (.p8 contents)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,9 +51,9 @@ check_payload() {
 
 upload() {
   local pkg="$1"
-  : "${APP_STORE_CONNECT_KEY_ID:?APP_STORE_CONNECT_KEY_ID is required}"
-  : "${APP_STORE_CONNECT_ISSUER_ID:?APP_STORE_CONNECT_ISSUER_ID is required}"
-  : "${APP_STORE_CONNECT_KEY:?APP_STORE_CONNECT_KEY (.p8 contents) is required}"
+  : "${APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID:?APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID is required}"
+  : "${APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID:?APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID is required}"
+  : "${APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY:?APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY (.p8 contents) is required}"
   if ! pkgutil --check-signature "$pkg" >/dev/null; then
     echo "$pkg isn't signed. Build it with MAS_PROVISIONING_PROFILE and the distribution certificates." >&2
     exit 1
@@ -55,9 +62,10 @@ upload() {
   check_payload "$pkg"
   # altool looks for AuthKey_<id>.p8 in ./private_keys.
   mkdir -p "$STAGE/private_keys"
-  printf '%s\n' "$APP_STORE_CONNECT_KEY" > "$STAGE/private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8"
+  printf '%s\n' "$APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY" > "$STAGE/private_keys/AuthKey_$APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID.p8"
   cd "$STAGE"
-  local auth=(-t macos --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID")
+  local auth=(-t macos --apiKey "$APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID"
+    --apiIssuer "$APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID")
   xcrun altool --validate-app -f "$pkg" "${auth[@]}"
   xcrun altool --upload-app -f "$pkg" "${auth[@]}"
   echo "Uploaded $(basename "$pkg"). It shows up under TestFlight in App Store Connect once processed."
@@ -126,20 +134,26 @@ if [[ -n "${MAS_PROVISIONING_PROFILE:-}" ]]; then
   cp "$MAS_PROVISIONING_PROFILE" "$APP/Contents/embedded.provisionprofile"
   sed -i '' "s/__APPLICATION_IDENTIFIER__/$APP_ID/; s/__TEAM_ID__/$TEAM_ID/" "$ENTITLEMENTS"
 
-  if [[ -n "${MAS_CERTIFICATES:-}" ]]; then
+  if [[ -n "${APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64:-}" \
+    || -n "${APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64:-}" ]]; then
+    : "${APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64:?APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64 is required}"
+    : "${APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64:?APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64 is required}"
     KEYCHAIN="$STAGE/signing.keychain-db"
     KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
-    echo "$MAS_CERTIFICATES" | base64 --decode > "$STAGE/certs.p12"
     security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
     security set-keychain-settings -lut 21600 "$KEYCHAIN"
     security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-    security import "$STAGE/certs.p12" -k "$KEYCHAIN" -P "${MAS_CERTIFICATES_PASSWORD:-}" \
-      -T /usr/bin/codesign -T /usr/bin/productbuild
+    echo "$APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64" | base64 --decode > "$STAGE/distribution.p12"
+    security import "$STAGE/distribution.p12" -k "$KEYCHAIN" -P "${APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD:-}" \
+      -T /usr/bin/codesign
+    echo "$APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64" | base64 --decode > "$STAGE/installer.p12"
+    security import "$STAGE/installer.p12" -k "$KEYCHAIN" -P "${APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_PASSWORD:-}" \
+      -T /usr/bin/productbuild
     security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
     security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
   fi
-  APP_IDENTITY="${MAS_APP_IDENTITY:-Apple Distribution}"
-  INSTALLER_IDENTITY="${MAS_INSTALLER_IDENTITY:-3rd Party Mac Developer Installer}"
+  APP_IDENTITY="${APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_IDENTITY:-Apple Distribution}"
+  INSTALLER_IDENTITY="${APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_IDENTITY:-3rd Party Mac Developer Installer}"
   echo "Signing for the Mac App Store as $APP_ID"
 else
   # The identifiers need a provisioning profile; without one, test the sandbox locally.

@@ -90,14 +90,15 @@ scripts/package-macos-appstore.sh dist          # dist/scratchpad-<version>-maco
 
 The script takes the team and application identifier from the profile and signs with the
 certificates in your login keychain. If you have certificates from more than one team, set
-`MAS_APP_IDENTITY` and `MAS_INSTALLER_IDENTITY` to the full names.
+`APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_IDENTITY` and `APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_IDENTITY`
+to the full names.
 
 **Upload** (or drag the `.pkg` into Apple's *Transporter* app):
 
 ```sh
-export APP_STORE_CONNECT_KEY_ID=ABC123DEFG
-export APP_STORE_CONNECT_ISSUER_ID=57246542-96fe-1a63-e053-0824d011072a
-export APP_STORE_CONNECT_KEY="$(cat ~/Downloads/AuthKey_ABC123DEFG.p8)"
+export APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID=ABC123DEFG
+export APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID=57246542-96fe-1a63-e053-0824d011072a
+export APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY="$(cat ~/Downloads/AuthKey_ABC123DEFG.p8)"
 scripts/package-macos-appstore.sh --upload dist/scratchpad-0.1.0-macos-appstore.pkg
 ```
 
@@ -139,16 +140,21 @@ anything is sent.
 
    | Secret | Value |
    | --- | --- |
-   | `MAS_CERTIFICATES` | In Keychain Access → *My Certificates*, select both certificates, *Export 2 items…* as `.p12` with a password, then `base64 -i certs.p12 \| pbcopy` |
-   | `MAS_CERTIFICATES_PASSWORD` | the `.p12` password |
-   | `MAS_PROVISIONING_PROFILE` | `base64 -i Scratchpad_Mac_App_Store.provisionprofile \| pbcopy` |
+   | `APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_P12_BASE64` | In Keychain Access → *My Certificates*, export the *Apple Distribution* certificate as `.p12` with a password, then `base64 -i distribution.p12 \| pbcopy` |
+   | `APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | its `.p12` password |
+   | `APPLE_DEVELOPER_ACCOUNT_APPLE_DISTRIBUTION_CERTIFICATE_IDENTITY` | `Apple Distribution: ScaleXY (TEAMID)` |
+   | `APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_P12_BASE64` | the same for the *3rd Party Mac Developer Installer* certificate |
+   | `APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_PASSWORD` | its `.p12` password |
+   | `APPLE_DEVELOPER_ACCOUNT_MAC_INSTALLER_CERTIFICATE_IDENTITY` | `3rd Party Mac Developer Installer: ScaleXY (TEAMID)` |
+   | `APPLE_DEVELOPER_ACCOUNT_PROFILE_COM_SCALEXY_SCRATCHPAD_MAC_APP_STORE_BASE64` | `base64 -i Scratchpad_Mac_App_Store.provisionprofile \| pbcopy` |
 
    From the next release on, the `mac-app-store-package` workflow artifact holds the signed
    `scratchpad-<version>-macos-appstore.pkg`. Without these secrets the job still builds an
    unsigned test package, which shows the packaging works.
 2. **Create a GitHub environment** named `mac-app-store` (*Settings → Environments*) with
-   **required reviewers**, and add the environment secrets `APP_STORE_CONNECT_KEY_ID`,
-   `APP_STORE_CONNECT_ISSUER_ID` and `APP_STORE_CONNECT_KEY` (the contents of the `.p8` file).
+   **required reviewers**, and add the environment secrets
+   `APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY_ID`, `APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_ISSUER_ID` and
+   `APPLE_DEVELOPER_ACCOUNT_APP_STORE_CONNECT_KEY` (the contents of the `.p8` file).
 3. **Add the repository variable** `MAS_UPLOAD` = `true`.
 
 On every non-prerelease tag, the `mac-app-store-upload` job then waits for approval and uploads
@@ -167,7 +173,7 @@ the build and submit it for review. Prereleases (`v1.2.0-rc.1`) are never upload
   removes extended attributes from the app before signing and checks the finished package, so
   rebuild with it rather than repackaging by hand.
 * **Renewals.** Distribution certificates expire after a year. Create new ones and a new
-  profile, then update the three repository secrets. Installed copies keep working.
+  profile, then update the repository secrets. Installed copies keep working.
 * **App Review rules that apply** (guideline 2.4.5): the app is sandboxed, has no updater of its
   own, doesn't start at login and stops its SMTP and web servers when it quits.
 * **SDK.** The upload records the Xcode and SDK used (`DT*` keys in `Info.plist`). If App Store
