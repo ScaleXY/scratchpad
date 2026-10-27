@@ -16,7 +16,7 @@ cat > "$WORK/page.html" <<EOF
 EOF
 for scale in 1 2; do
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor="$scale" \
-    --window-size=660,420 --screenshot="$WORK/background-$scale.png" "file://$WORK/page.html" 2>/dev/null
+    --window-size=660,440 --screenshot="$WORK/background-$scale.png" "file://$WORK/page.html" 2>/dev/null
 done
 tiffutil -cathidpicheck "$WORK/background-1.png" "$WORK/background-2.png" -out "$OUT" 2>/dev/null
 [[ -n "${PREVIEW:-}" ]] && cp "$WORK/background-2.png" "$PREVIEW"

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="660" height="420" viewBox="0 0 660 420">
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="440" viewBox="0 0 660 440">
   <!--
     Background of the macOS .dmg window: a comic strip about intercepting Enigma messages.
     Rendered by scripts/build-dmg-background.sh into dmg-background.tiff (1x + 2x).
@@ -7,6 +7,8 @@
       Applications    centered at (490, 302) in the archive drawer
     Finder draws each label just below the icon (about 362-380 pt), on the brass nameplates. Their
     mid-tone keeps both the black (Light Mode) and white (Dark Mode) label text readable.
+    The strip ends at y=420; the plain paper below it absorbs title bars of different heights
+    (Finder's window bounds include the title bar; see window_rect in dmg-settings.py).
   -->
   <defs>
     <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse">
@@ -59,8 +61,8 @@
   </defs>
 
   <!-- Paper -->
-  <rect width="660" height="420" fill="#f4ecd8"/>
-  <rect width="660" height="420" fill="url(#dots)"/>
+  <rect width="660" height="440" fill="#f4ecd8"/>
+  <rect width="660" height="440" fill="url(#dots)"/>
 
   <!-- ============ Panel 1: the U-boat transmits ============ -->
   <g>
