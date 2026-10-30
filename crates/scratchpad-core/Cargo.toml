@@ -19,7 +19,7 @@ chrono.workspace = true
 futures.workspace = true
 uuid.workspace = true
 base64.workspace = true
-mail-parser = { version = "0.11", features = ["full_encoding"] }
+mail-parser = { version = "1.0", features = ["full_encoding"] }
 rusqlite = { version = "0.40", features = ["bundled"] }
 directories = "6"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging", "tls12"] }
