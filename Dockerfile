@@ -5,7 +5,7 @@
 # architecture instead of compiling under emulation.
 #   docker buildx build --platform linux/amd64,linux/arm64,linux/386 .
 # Keep the Rust version at or above workspace.package.rust-version.
-FROM --platform=$BUILDPLATFORM rust:1.98-slim-bookworm AS build
+FROM --platform=$BUILDPLATFORM rust:1.99-slim-bookworm AS build
 ARG TARGETARCH
 WORKDIR /src
 RUN case "$TARGETARCH" in \
